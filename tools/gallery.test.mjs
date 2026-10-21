@@ -26,6 +26,7 @@ test('Expanded closed room, forty wall slots and thirty-two safe pedestal positi
   for(const p of r.pedestals)assert.equal(isFreeFloor(r,p.x,p.z,p.width/2+.2,p.id),true);
   r.pedestals[31].model='data:model/gltf-binary;base64,AAAA';const id=r.pedestals[31].id;
   setPedestalCount(r,1);assert.equal(r.pedestals[0].id,id);assert.throws(()=>setPedestalCount(r,0));assert.equal(r.pedestals.length,1);
+  const compact={...r,capacity:8,works:[]};assert.ok(roomLayout(compact).front>r.pedestals[0].z+1);
   assert.equal(validateGallery(g).rooms.at(-1).works.length,40);
 });
 test('Lowering capacity relocates out-of-range slots without deleting artworks',()=>{

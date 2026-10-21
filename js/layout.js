@@ -1,7 +1,9 @@
 export const MAX_WORKS=40, MAX_PEDESTALS=32;
 export function roomLayout(room={}) {
   const capacity=room.capacity??24, sideCount=Math.max(7,Math.ceil((capacity-10)/2));
-  const front=Math.max(14,-3+(sideCount-1)*2.5+2,Math.ceil((room.pedestals?.length||0)/4)*3.2+2);
+  const objects=[...(Array.isArray(room.pedestals)?room.pedestals:[]),...(Array.isArray(room.plants)?room.plants:[])];
+  const occupiedExtent=Math.max(0,...objects.filter(p=>p&&Number.isFinite(p.z)).map(p=>p.z+1.2));
+  const front=Math.max(14,-3+(sideCount-1)*2.5+2,Math.ceil((room.pedestals?.length||0)/4)*3.2+2,occupiedExtent);
   const slots=[];
   for(const x of [-6.4,-4,-1.6,.8])slots.push([x,2.1,-4.82,0]);
   for(let i=0;i<sideCount;i++)slots.push([-7.82,2.1,-3+i*2.5,Math.PI/2]);
