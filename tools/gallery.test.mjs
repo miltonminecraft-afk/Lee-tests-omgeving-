@@ -4,9 +4,42 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {validateGallery,addRoom,addPedestal,addWork,swapSlot,setWorkCapacity,setPedestalCount} from '../js/model.js';
-import {roomLayout,isFreeFloor} from '../js/layout.js';
+import {roomLayout,isFreeFloor,orderedWorks} from '../js/layout.js';
+import {viewingDistances,inspectedWork} from '../js/viewing.js';
 import {createGalleryServers} from './server.mjs';
 const source=JSON.parse(await fs.readFile(new URL('../content/gallery.json',import.meta.url),'utf8'));
+
+test('Artwork information appears only close up and facing the work, on every wall and screen shape',()=>{
+  const room={capacity:24,works:[{id:'back',slot:0},{id:'left',slot:4},{id:'right',slot:11},{id:'front',slot:18}]};
+  const slots=roomLayout(room).slots;
+  for(const aspect of [1.6,.6])for(const work of room.works){
+    const [x,y,z,rotation]=slots[work.slot],nx=Math.sin(rotation),nz=Math.cos(rotation);
+    const distances=viewingDistances(aspect),direction={x:-nx,y:0,z:-nz};
+    const position=d=>({x:x+nx*d,y,z:z+nz*d});
+    assert.equal(inspectedWork(room,position(distances.tour),direction,aspect),null);
+    assert.equal(inspectedWork(room,position(distances.close),direction,aspect)?.id,work.id);
+    assert.equal(inspectedWork(room,position(distances.close),{x:nx,y:0,z:nz},aspect),null);
+    assert.equal(inspectedWork(room,position(-distances.close),{x:nx,y:0,z:nz},aspect),null);
+  }
+});
+
+test('Tour follows the walls, skips empty places and reflects moves without changing stored order',()=>{
+  const room=validateGallery(source).rooms[0],stored=[...room.works];
+  assert.deepEqual(orderedWorks(room).map(w=>w.slot),[7,6,5,4,0,1,2,3]);
+  room.works.reverse();
+  assert.deepEqual(orderedWorks(room).map(w=>w.slot),[7,6,5,4,0,1,2,3]);
+  assert.deepEqual(room.works,[...stored].reverse());
+  swapSlot(room,stored[0],7);
+  assert.equal(orderedWorks(room)[0].id,stored[0].id);
+  for(const capacity of [0,1,8,24,40]){
+    const full={capacity,works:Array.from({length:capacity},(_,slot)=>({id:String(slot),slot}))};
+    const side=Math.max(7,Math.ceil((capacity-10)/2));
+    const expected=[...Array.from({length:side},(_,i)=>3+side-i),0,1,2,3,
+      ...Array.from({length:side},(_,i)=>4+side+i),
+      ...Array.from({length:6},(_,i)=>9+2*side-i)].filter(slot=>slot<capacity);
+    assert.deepEqual(orderedWorks(full).map(w=>w.slot),expected);
+  }
+});
 test('Original collection, room expansion, independent frames, plinths and slot swaps',()=>{
   const g=validateGallery(source);assert.equal(g.rooms.length,2);assert.equal(g.rooms.flatMap(r=>r.works).length,11);assert.equal(g.rooms[0].pedestals.length,8);
   const r=addRoom(g);const a=addWork(r,'images/slides/kunst1.jpg','A'),b=addWork(r,'images/slides/kunst2.jpg','B');a.frame.width=8;assert.equal(b.frame.width,3);swapSlot(r,a,1);assert.equal(a.slot,1);assert.equal(b.slot,0);addPedestal(r);assert.equal(validateGallery(g).rooms.length,3);

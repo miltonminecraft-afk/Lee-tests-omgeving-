@@ -3,6 +3,7 @@ import {WalkNavigation} from './navigation.js';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {MATERIALS} from './model.js';
 import {roomLayout} from './layout.js';
+import {viewingDistances,inspectedWork} from './viewing.js';
 import {MaterialLibrary} from './materials.js';
 import {EffectComposer} from '../vendor/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from '../vendor/addons/postprocessing/RenderPass.js';
@@ -11,8 +12,9 @@ import {OutputPass} from '../vendor/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from '../vendor/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from '../vendor/addons/geometries/RoundedBoxGeometry.js';
 export class GalleryScene {
-  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{}}={}) {
+  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onInspect=()=>{}}={}) {
     this.container=container;this.onSelect=onSelect;this.onPortal=onPortal;this.onError=onError;this.layout=roomLayout();
+    this.onInspect=onInspect;this.inspected=null;this.viewDirection=new THREE.Vector3();
     this.renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,matchMedia('(pointer:coarse)').matches?1.3:1.7));
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -41,7 +43,7 @@ export class GalleryScene {
       if(document.hidden||!this.container.clientHeight)return;
       if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/1100),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(t===1)this.transition=null;}
       this.navigation.update();this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,-7.6,7.6);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,-8.05,this.layout.front-.4);this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);
-      this.camera.lookAt(this.controls.target);this.updateSpotlights();this.composer.render();
+      this.camera.lookAt(this.controls.target);this.updateInspection();this.updateSpotlights();this.composer.render();
     });
   }
   resize(){const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;this.renderer.setSize(w,h);this.composer.setSize(w,h);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
@@ -54,6 +56,7 @@ export class GalleryScene {
   }
   disposeGroup(group){group?.traverse(o=>{if(o.isLight&&o.shadow)o.shadow.dispose();if(o.isMesh){o.geometry.dispose();for(const mat of Array.isArray(o.material)?o.material:[o.material])if(!Object.values(this.materials).includes(mat)){if(mat.map?.userData.owned)mat.map.dispose();mat.userData.released=true;mat.dispose();}}});group?.removeFromParent();this.library?.prune();}
   async loadRoom(room){
+    this.inspected=null;this.onInspect(null);
     const gen=++this.generation;this.navigation.path=[];this.disposeGroup(this.world);this.world=new THREE.Group();this.scene.add(this.world);this.room=room;this.layout=roomLayout(room);this.clickables=[];this.workGroups.clear();this.pedestalGroups=new Map();this.lightTargets=new Map();
     for(const [url,tex]of this.texCache)if(!room.works.some(w=>w.src===url)){tex.dispose();this.texCache.delete(url);}
     const {front,height}=this.layout,depth=front+5,center=(front-5)/2;
@@ -137,7 +140,11 @@ export class GalleryScene {
   }
   move(position,target,animate=true){if(this.navigation)this.navigation.path=[];this.controls.enabled=true;if(!animate||matchMedia('(prefers-reduced-motion: reduce)').matches){this.camera.position.copy(position);this.controls.target.copy(target);this.camera.lookAt(target);this.transition=null;}else this.transition={time:performance.now(),from:this.camera.position.clone(),to:position,lookFrom:this.controls.target.clone(),lookTo:target};}
   overview(animate=true){this.move(new THREE.Vector3(4.3,2.5,4.5),new THREE.Vector3(-.8,1.8,-3.6),animate);}
-  focus(work){const p=this.layout.slots[work.slot],center=new THREE.Vector3(p[0],p[1],p[2]);const offset=new THREE.Vector3(0,.05,this.camera.aspect<.9?4:3.1).applyAxisAngle(new THREE.Vector3(0,1,0),p[3]);this.move(center.clone().add(offset),center);}
+  focus(work,{close=false}={}){const p=this.layout.slots[work.slot],center=new THREE.Vector3(p[0],p[1],p[2]);const distance=viewingDistances(this.camera.aspect)[close?'close':'tour'];const offset=new THREE.Vector3(0,.05,distance).applyAxisAngle(new THREE.Vector3(0,1,0),p[3]);this.move(center.clone().add(offset),center);}
+  updateInspection(){
+    const work=this.room&&!this.transition?inspectedWork(this.room,this.camera.position,this.camera.getWorldDirection(this.viewDirection),this.camera.aspect,this.layout.slots):null;
+    if(work?.id!==this.inspected?.id){this.inspected=work;this.onInspect(work);}
+  }
   focusPedestal(p){const target=new THREE.Vector3(p.x,p.height+.3,p.z);this.move(new THREE.Vector3(THREE.MathUtils.clamp(p.x+1.3,-7.3,7.3),2.2,Math.min(this.layout.front-.6,p.z+2.6)),target);}
   downloadView(){this.composer.render();const a=document.createElement('a');a.href=this.renderer.domElement.toDataURL('image/png');a.download='lee-mobero-galerij.png';a.click();}
 }

@@ -1,4 +1,18 @@
 export const MAX_WORKS=40, MAX_PEDESTALS=32;
+export function orderedWorks(room) {
+  const {slots}=roomLayout(room);
+  // One continuous circuit: left wall towards the back, then back, right and front.
+  const wallOrder=new Map([[Math.PI/2,0],[0,1],[-Math.PI/2,2],[Math.PI,3]]);
+  const position=work=>{
+    const [x,,z,rotation]=slots[work.slot];
+    const wall=wallOrder.get(rotation);
+    return [wall,wall===0?-z:wall===1?x:wall===2?z:-x];
+  };
+  return [...room.works].sort((a,b)=>{
+    const pa=position(a),pb=position(b);
+    return pa[0]-pb[0]||pa[1]-pb[1];
+  });
+}
 export function roomLayout(room={}) {
   const capacity=room.capacity??24, sideCount=Math.max(7,Math.ceil((capacity-10)/2));
   const objects=[...(Array.isArray(room.pedestals)?room.pedestals:[]),...(Array.isArray(room.plants)?room.plants:[])];
