@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "rooms": [
+    {
+      "id": "portraits",
+      "title": "Kleur & identiteit",
+      "accent": "#88917c",
+      "works": [
+        {
+          "id": "kunst2",
+          "slot": 0,
+          "title": "Portret met rood masker",
+          "kind": "painting",
+          "src": "images/slides/kunst2.jpg"
+        },
+        {
+          "id": "kunst5",
+          "slot": 1,
+          "title": "Portret met bloemenmasker",
+          "kind": "painting",
+          "src": "images/slides/kunst5.jpg"
+        },
+        {
+          "id": "kunst7",
+          "slot": 2,
+          "title": "Portret op rood",
+          "kind": "painting",
+          "src": "images/slides/kunst7.jpg"
+        },
+        {
+          "id": "kunst10",
+          "slot": 3,
+          "title": "Portret met blauwe bloemen",
+          "kind": "painting",
+          "src": "images/slides/kunst10.jpg"
+        },
+        {
+          "id": "kunst3",
+          "slot": 4,
+          "title": "Portret op licht doek",
+          "kind": "painting",
+          "src": "images/slides/kunst3.jpg"
+        },
+        {
+          "id": "kunst4",
+          "slot": 5,
+          "title": "Portret met groene bril",
+          "kind": "painting",
+          "src": "images/slides/kunst4.jpg"
+        },
+        {
+          "id": "kunst6",
+          "slot": 6,
+          "title": "Portret met leliemasker",
+          "kind": "painting",
+          "src": "images/slides/kunst6.jpg"
+        },
+        {
+          "id": "kunst9",
+          "slot": 7,
+          "title": "Portret in groen en rood",
+          "kind": "painting",
+          "src": "images/slides/kunst9.jpg"
+        }
+      ],
+      "pedestals": [
+        {
+          "height": 1.1,
+          "shape": "square",
+          "width": 0.7,
+          "color": "#d5c5ac",
+          "x": 3.1,
+          "title": "Sokkel 1",
+          "z": -6.7,
+          "id": "portraits-plinth-1"
+        },
+        {
+          "height": 0.7,
+          "shape": "square",
+          "width": 0.6,
+          "color": "#d5c5ac",
+          "x": 4.5,
+          "title": "Sokkel 2",
+          "z": -6.2,
+          "id": "portraits-plinth-2"
+        }
+      ]
+    },
+    {
+      "id": "ceramics",
+      "title": "Vorm & verbeelding",
+      "accent": "#b78b7a",
+      "works": [
+        {
+          "id": "kunst1",
+          "slot": 0,
+          "title": "Schoenvaas met rozen",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst1.jpg"
+        },
+        {
+          "id": "kunst8",
+          "slot": 2,
+          "title": "Sandaal met sculpturale hak",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst8.jpg"
+        },
+        {
+          "id": "kunst11",
+          "slot": 3,
+          "title": "Laars met geschilderd portret",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst11.jpg"
+        }
+      ],
+      "pedestals": [
+        {
+          "height": 1.1,
+          "shape": "square",
+          "width": 0.7,
+          "color": "#d5c5ac",
+          "x": 3.1,
+          "title": "Sokkel 1",
+          "z": -6.7,
+          "id": "ceramics-plinth-1"
+        },
+        {
+          "height": 0.7,
+          "shape": "square",
+          "width": 0.6,
+          "color": "#d5c5ac",
+          "x": 4.5,
+          "title": "Sokkel 2",
+          "z": -6.2,
+          "id": "ceramics-plinth-2"
+        }
+      ]
+    }
+  ]
+}
