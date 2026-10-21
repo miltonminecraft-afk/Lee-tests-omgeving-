@@ -22,18 +22,32 @@ node tools/server.mjs
 
 Desktop: klik **WASD · Rondlopen** voor muisbesturing, loop met WASD, en gebruik Esc om de muis vrij te geven. Slepen met de muis werkt ook. Mobiel: swipe om rond te kijken; tik op de vloer om naar een bereikbare plek te lopen. Tik op een kunstwerk voor een dichtbijzicht. Via de zaalkeuze of de boog open je de volgende zaal.
 
+## Beeldkwaliteit en rondgang
+
+De bezoekerssite opent rechtstreeks in de 3D-ruimte: https://miltonminecraft-afk.github.io/Lee-tests-omgeving-/
+
+De camera gaat automatisch elke vijf seconden naar het volgende werk en vervolgens naar de volgende zaal. Handmatig kijken, lopen, een werk selecteren of de collectie openen pauzeert dit. De afspeelknop hervat de rondgang.
+
+De ruimte heeft vier gesloten wanden, een afgesloten daklicht, gefotografeerde PBR-materialen, indirecte omgevingsverlichting, contactschaduwen (SSAO), daglichtschaduwen en op de kunst gerichte spots. Dit is realtime rasterisatie, geen echte ray/path tracer of gescande splatruimte.
+
+De textuurkeuze biedt 2K, 4K en 8K. 8K laadt echte 8192px-kleurtextures voor pleister, steen en hout; normal- en roughnessmaps blijven op 2K. De basisbestanden van 1K staan lokaal, de hogere resoluties laden vanaf Poly Haven. Desktop begint op 4K, touch-apparaten op 2K. 8K vraagt ongeveer 1 GB extra GPU-geheugen voor de drie kleurtextures inclusief mipmaps; de uiteindelijke resolutie hangt ook af van de grafische kaart. Een grotere textuur maakt de bestaande kunstfoto's niet scherper dan hun originele resolutie.
+
+De spots en hun behuizingen richten op het middelpunt van elk werk en volgen verplaatsingen. De acht dichtstbijzijnde lichtbundels zijn actief om de renderkosten bij grotere collecties te begrenzen. Alle lampbehuizingen blijven zichtbaar. De materialen en lichttechniek zijn nog niet hetzelfde als een fotorealistische scan; zo'n scan kan later als aparte omgevingslaag worden toegevoegd.
+
+Materiaalbronnen en licentie: [credits](images/materials/CREDITS.md).
+
 ## Beheer
 
 Er zijn afzonderlijke tabbladen voor ruimte, werken, sokkels en planten. Aanpassingen worden automatisch in een privéconcept bewaard. **Publiceer** werkt `content/gallery.json` op de beheerserver bij. Dat maakt wijzigingen direct zichtbaar op de lokaal gehoste bezoekerssite. Een afzonderlijke GitHub Pages-site verandert pas na een nieuwe commit/deployment van dat bestand.
 
-- Zalen toevoegen en benoemen; wandkleur, boogkleur en daglicht aanpassen.
+- Zalen toevoegen en benoemen; aantallen schilderijplekken en sokkels invullen en met **Aantallen toepassen** instellen. De zaal groeit mee. Een lager aantal plekken bewaart aanwezige werken; sokkels met objecten worden niet automatisch verwijderd. Wandkleur, boogkleur en daglicht blijven aanpasbaar.
 - Afbeeldingen toevoegen/vervangen, wandplekken wisselen, lijstmateriaal/kleur/breedte/diepte en passe-partout wijzigen.
 - Sokkels toevoegen/verplaatsen, vierkante of ronde vorm, afmetingen en kleur aanpassen.
 - Echte objecten als zelfstandig GLB 2.0-bestand met ingebouwde textures uploaden; hoogte en draaiing instellen. Draco/Meshopt-compressie en externe bestanden worden niet ondersteund.
 - Planten in keramische potten toevoegen en verplaatsen.
 - Galerij inclusief uploads exporteren/importeren en een beeld van de 3D-ruimte downloaden.
 
-Capaciteit van deze versie: maximaal 30 zalen; per zaal 8 wandwerken, 16 sokkels en 12 planten. Afbeeldingen maximaal 8 MB, GLB maximaal 25 MB, volledige import maximaal 100 MB. Slechts één zaal wordt tegelijk opgebouwd. Dit is een eerste werkende versie, geen onbeperkte mediaopslag.
+Capaciteit van deze versie: maximaal 30 zalen; per zaal 0–40 schilderijplekken, 0–32 sokkels en 12 planten. Afbeeldingen maximaal 8 MB, GLB maximaal 25 MB, volledige import maximaal 100 MB. Slechts één zaal wordt tegelijk opgebouwd. Dit is een eerste werkende versie, geen onbeperkte mediaopslag.
 
 De namen van de bestaande werken zijn beschrijvende labels, geen geverifieerde officiële titels. De keramiekwerken zijn nu foto's; er zijn geen echte scans meegeleverd. De ruimte is een parametrisch 3D-model met losse frames en objecten. Er is nog geen Gaussian-splatruimte of splat-lader: daarvoor zijn geschikte scans nodig. Het gegenereerde sfeerbeeld is een ontwerpimpressie; de webgalerij gebruikt de originele, ongewijzigde afbeeldingen.
 
