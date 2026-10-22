@@ -21,7 +21,16 @@
           "rotation": 33
         }
       ],
-      "trees": [],
+      "trees": [
+        {
+          "id": "portraits-outside-tree",
+          "asset": "island_tree_01",
+          "x": -2.5,
+          "z": -13,
+          "height": 14,
+          "rotation": 335
+        }
+      ],
       "works": [
         {
           "id": "kunst2",
@@ -157,7 +166,16 @@
           "rotation": 33
         }
       ],
-      "trees": [],
+      "trees": [
+        {
+          "id": "ceramics-outside-tree",
+          "asset": "island_tree_01",
+          "x": -2.5,
+          "z": -13,
+          "height": 14,
+          "rotation": 335
+        }
+      ],
       "works": [
         {
           "id": "kunst1",

@@ -1,0 +1,33 @@
+{
+  "revision": "preview-1792674245",
+  "rooms": {
+    "approved": {
+      "day": "images/splats/rooms/approved-day.spz",
+      "night": "images/splats/rooms/approved-night.spz"
+    },
+    "ivory": {
+      "day": "images/splats/rooms/ivory-day.spz",
+      "night": "images/splats/rooms/ivory-night.spz"
+    },
+    "greige": {
+      "day": "images/splats/rooms/greige-day.spz",
+      "night": "images/splats/rooms/greige-night.spz"
+    }
+  },
+  "assets": {
+    "concept_bench": {
+      "nativeHeight": 0.48,
+      "width": 2.44,
+      "depth": 0.64,
+      "day": "images/splats/objects/concept_bench-day.spz",
+      "night": "images/splats/objects/concept_bench-night.spz"
+    },
+    "island_tree_01": {
+      "day": "images/splats/objects/island_tree_01-day.spz",
+      "nativeHeight": 5.027446746826172,
+      "width": 4.755149841308594,
+      "depth": 4.817679405212402,
+      "night": "images/splats/objects/island_tree_01-night.spz"
+    }
+  }
+}

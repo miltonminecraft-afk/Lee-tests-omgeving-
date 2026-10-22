@@ -1,4 +1,5 @@
 import {renderMaterials} from '/admin/materials.js';
+import {conceptFloor} from '/js/concept-layout.js';
 import {roomLayout} from '/js/layout.js';
 import {ASSETS} from '/js/assets.js';
 import {GalleryScene} from '/js/concept-scene.js';
@@ -22,6 +23,7 @@ function pickFile(accept){return new Promise(resolve=>{const input=$('filePicker
 function readFile(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Bestand kon niet worden gelezen'));reader.readAsDataURL(file);});}
 async function imageFile(){const f=await pickFile('image/jpeg,image/png,image/webp');if(!f)return null;if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>8*1024*1024)throw Error('Kies JPG, PNG of WebP van maximaal 8 MB.');const src=await readFile(f);const img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Geen geldige afbeelding'));img.src=src;});if(img.width>8192||img.height>8192)throw Error('Gebruik een afbeelding van maximaal 8192 pixels per zijde.');return {src,name:f.name.replace(/\.[^.]+$/,'')};}
 function renderEditor(){
+  if(scene){scene.onFloorPlace=null;scene.renderer.domElement.style.cursor='';}
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));const area=$('editorFields');area.replaceChildren();const r=room();
   if(tab==='materials'){renderMaterials(area,r,scene,changed,api,toast);return;}
   if(tab==='room'){
@@ -51,6 +53,17 @@ function renderEditor(){
     if(!r.pedestals.length){area.append(note('Voeg een sokkel toe voor een toekomstig 3D-kunstwerk.'));return;}
     const p=r.pedestals.find(p=>p.id===selectedId)||r.pedestals[0];selectedId=p.id;
     const update=()=>{scene.buildPedestal(p);changed();};
+    area.append(section('Hoogte'),button('Laag · 60 cm',()=>{p.height=.6;update();renderEditor();}),button('Hoog · 100 cm',()=>{p.height=1;update();renderEditor();}));
+    area.append(button('Verplaats op de vloer',()=>{
+      scene.navigation.path=[];scene.renderer.domElement.style.cursor='crosshair';
+      toast('Klik op de vloer in de schilderijzaal of de sokkelruimte.');
+      scene.onFloorPlace=point=>{
+        const x=Math.round(point.x*20)/20,z=Math.round(point.z*20)/20;
+        if(r.architecture==='concept'&&!conceptFloor(r,x,z,p.width/2+.08,p.id)){toast('Kies een vrije plek op de vloer.');return;}
+        p.x=x;p.z=z;update();renderEditor();
+      };
+    }),button('Plaatsen annuleren',()=>renderEditor()));
+
     area.append(field('Sokkel','select',p.id,v=>{selectedId=v;renderEditor();scene.focusPedestal(r.pedestals.find(p=>p.id===v));},{choices:r.pedestals.map(p=>[p.id,p.title])}),field('Naam','text',p.title,v=>{p.title=v;changed();},{maxLength:120}),field('Vorm','select',p.shape,v=>{p.shape=v;update();},{choices:[['square','Vierkant'],['round','Rond']]}),field('Materiaal / kleur','color',p.color,v=>{p.color=v;update();}));
     for(const [key,title,min,max]of [['height','Hoogte',.4,1.8],['width','Breedte',.3,1.4],['x','Positie links / rechts',-11,9],['z','Positie achter / voor',-17,roomLayout(r).front-1]])area.append(field(title,'range',p[key],v=>{p[key]=v;clearTimeout(scene.pedTimer);scene.pedTimer=setTimeout(update,80);},{min,max,step:.05,unit:' m'}));
     area.append(section('3D-kunstwerk'),note(p.model?`Geplaatst: ${p.modelName}`:'Deze sokkel is leeg. Upload later een 3D-scan van een echt werk.'),button(p.model?'3D-object vervangen':'3D-object uploaden (.glb)',async()=>{const f=await pickFile('.glb');if(!f)return;if(f.size>25*1024*1024)throw Error('Kies een GLB van maximaal 25 MB.');const header=new DataView(await f.slice(0,12).arrayBuffer());if(header.byteLength<12||header.getUint32(0,true)!==0x46546c67||header.getUint32(4,true)!==2)throw Error('Dit is geen GLB 2.0-bestand.');p.model=(await readFile(f)).replace(/^data:[^;]*;/,'data:model/gltf-binary;');p.modelName=f.name;update();renderEditor();}));

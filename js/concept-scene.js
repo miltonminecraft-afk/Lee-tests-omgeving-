@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {GalleryScene as BaseScene} from './scene.js?v=doors-touch-20261022';
+import {GalleryScene as BaseScene} from './scene.js?v=splats-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {conceptLayout,conceptFloor,alcoveLocal} from './concept-layout.js';
 import {createGallerySky,createVisitorWeather} from './sky.js';

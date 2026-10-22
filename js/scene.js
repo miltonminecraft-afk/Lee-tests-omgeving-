@@ -14,10 +14,10 @@ import {OutputPass} from '../vendor/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from '../vendor/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from '../vendor/addons/geometries/RoundedBoxGeometry.js';
 export class GalleryScene {
-  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onInspect=()=>{},localMaterials=false,visitor=false,onFatal=onError,mobile=matchMedia('(pointer:coarse)').matches}={}) {
+  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onInspect=()=>{},localMaterials=false,visitor=false,splats=false,onFatal=onError,mobile=matchMedia('(pointer:coarse)').matches}={}) {
     this.visitor=visitor;this.mobile=mobile;this.onFatal=onFatal;this.presenting=false;this.contextLost=false;this.container=container;this.onSelect=onSelect;this.onPortal=onPortal;this.onError=onError;this.layout=roomLayout();
     this.onInspect=onInspect;this.inspected=null;this.viewDirection=new THREE.Vector3();
-    this.renderer=new THREE.WebGLRenderer({antialias:!this.mobile,preserveDrawingBuffer:!visitor});
+    this.renderer=new THREE.WebGLRenderer({antialias:!this.mobile&&!splats,preserveDrawingBuffer:!visitor});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,this.mobile?1.3:1.7));
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;
@@ -25,9 +25,10 @@ export class GalleryScene {
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#e5e3dc');
     const environment=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(environment,.035);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.38;environment.dispose();pmrem.dispose();
     this.camera=new THREE.PerspectiveCamera(50,1,.08,120);this.controls={target:new THREE.Vector3(),enabled:true,update:()=>{}};this.navigation=new WalkNavigation(this);
-    this.composer=new EffectComposer(this.renderer);this.composer.addPass(new RenderPass(this.scene,this.camera));this.ao=new SSAOPass(this.scene,this.camera,512,512,24);this.ao.kernelRadius=.55;this.ao.minDistance=.002;this.ao.maxDistance=.12;this.ao.enabled=!this.mobile;this.composer.addPass(this.ao);this.composer.addPass(new OutputPass());
+    if(splats){this.ao={enabled:false};this.composer={render:()=>this.renderer.render(this.scene,this.camera),setSize:()=>{}};}
+    else{this.composer=new EffectComposer(this.renderer);this.composer.addPass(new RenderPass(this.scene,this.camera));this.ao=new SSAOPass(this.scene,this.camera,512,512,24);this.ao.kernelRadius=.55;this.ao.minDistance=.002;this.ao.maxDistance=.12;this.ao.enabled=!this.mobile;this.composer.addPass(this.ao);this.composer.addPass(new OutputPass());}
     this.raycaster=new THREE.Raycaster();this.clickables=[];this.workGroups=new Map();this.texCache=new Map();this.generation=0;
-    this.composer.renderTarget1.samples=this.mobile?0:4;this.composer.renderTarget2.samples=this.mobile?0:4;
+    if(!splats){this.composer.renderTarget1.samples=this.mobile?0:4;this.composer.renderTarget2.samples=this.mobile?0:4;}
     this.library=new MaterialLibrary(this.renderer);this.materials={stone:this.library.material('stone',{color:'#ffffff',roughness:.48}),wood:this.library.material('wood',{color:'#c5ad8c',roughness:.5}),dark:new THREE.MeshStandardMaterial({color:'#252622',roughness:.48,metalness:.35})};
     this.materialReady=localMaterials?Promise.resolve():this.library.setQuality('1k').then(()=>this.library.setQuality(matchMedia('(pointer:coarse)').matches?'2k':'4k')).catch(e=>this.onError(e.message));
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(container);
@@ -36,6 +37,7 @@ export class GalleryScene {
     this.renderer.domElement.addEventListener('pointerup',e=>{
       if(performance.now()<this.navigation.touch.suppressTapUntil||!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)>6)return;
       const r=this.renderer.domElement.getBoundingClientRect();this.raycaster.setFromCamera(document.pointerLockElement===this.renderer.domElement?new THREE.Vector2():new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),this.camera);
+      if(this.onFloorPlace&&this.floor){const floorHit=this.raycaster.intersectObject(this.floor,true)[0];if(floorHit)this.onFloorPlace(floorHit.point);return;}
       const hit=this.raycaster.intersectObjects(this.clickables,true)[0];
       if(hit){let obj=hit.object;while(obj&&!obj.userData.select&&!obj.userData.portal)obj=obj.parent;if(obj?.userData.portal){if(!this.enteringRoom)this.onPortal(obj.userData.portal===-1?-1:1);}else if(obj?.userData.select)this.onSelect(obj.userData.select);}else if(this.floor){const h=this.raycaster.intersectObject(this.floor,true)[0];if(h)this.navigation.walkTo(h.point);}
     });

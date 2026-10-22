@@ -2,7 +2,7 @@
 Run Blender with the approved .blend and --python this_file -- room|bench.
 Only derivative datasets are written; the source .blend is never saved over.
 """
-import bpy,json,math,sys,tempfile
+import bpy,json,math,sys,tempfile,runpy,shutil,itertools
 import numpy as np
 from pathlib import Path
 from mathutils import Vector
@@ -13,9 +13,11 @@ PALETTE=sys.argv[sys.argv.index('--')+2] if '--' in sys.argv and len(sys.argv)>s
 LIGHTING=sys.argv[sys.argv.index('--')+3] if '--' in sys.argv and len(sys.argv)>sys.argv.index('--')+3 else 'day'
 if MODE not in ('room','bench') or PALETTE not in ('approved','ivory','greige') or LIGHTING not in ('day','night'):
  raise ValueError('Expected room|bench, approved|ivory|greige, day|night')
-OUT=ROOT/'.local/splat-capture-v2'/((MODE if PALETTE=='approved' else MODE+'-'+PALETTE)+('-night' if LIGHTING=='night' else ''));OUT.mkdir(parents=True,exist_ok=True)
+OUT=ROOT/'.local/splat-capture-v3'/((MODE if PALETTE=='approved' else MODE+'-'+PALETTE)+('-night' if LIGHTING=='night' else ''));OUT.mkdir(parents=True,exist_ok=True)
+OLD=ROOT/'.local/splat-capture-v2'/OUT.name
 tempfile.tempdir=str(ROOT/'.local/blender-temp')
 scene=bpy.context.scene
+if MODE=='room':runpy.run_path(str(ROOT/'tools/repair-gallery-door.py'))['repair_door']()
 architecture=set(bpy.data.collections['Architecture'].objects)
 # Complete the floor underneath the existing angled alcove; do not move its walls.
 stone=bpy.data.materials.get('Cream honed limestone · continuous stone')
@@ -110,10 +112,20 @@ else:
  for z in [.65,1.5,2.5]:
   for i in range(16):
    angle=2*math.pi*i/16;views.append(((3*math.cos(angle),3*math.sin(angle),z),(0,0,.25)))
+if MODE=='room':
+ views += [((-2,-4,1.65),(-5.52,-4,1.7)),((-3.7,-3,1.65),(-5.52,-4,1.7)),((-3.7,-5,1.65),(-5.52,-4,1.7)),((-8,-4,1.65),(-5.52,-4,1.7)),((-6.5,-3,1.65),(-5.52,-4,1.7)),((-6.5,-5,1.65),(-5.52,-4,1.7))]
 frames=[]
+from bpy_extras.object_utils import world_to_camera_view
+changed_bounds=[Vector(p) for p in itertools.product([-5.9,-5.1],[-5,-3],[0,3.4])]
 for index,(position,target) in enumerate(views):
  cam.location=position;cam.rotation_euler=(Vector(target)-cam.location).to_track_quat('-Z','Y').to_euler();bpy.context.view_layer.update()
  filename=f'frame_{index:03d}.png';scene.render.filepath=str(OUT/filename)
+ if MODE=='room' and not (OUT/filename).exists() and (OLD/filename).exists():
+  projected=[world_to_camera_view(scene,cam,p) for p in changed_bounds]
+  # Reuse existing calibrated views only when the repaired doorway is outside
+  # the entire view frustum. Views seeing any of it are rendered again.
+  outside=all(p.z<0 for p in projected) or (all(p.z>0 for p in projected) and any(all(getattr(p,axis)<bound if side<0 else getattr(p,axis)>bound for p in projected) for axis,bound,side in [('x',-.1,-1),('x',1.1,1),('y',-.1,-1),('y',1.1,1)]))
+  if outside:shutil.copy2(OLD/filename,OUT/filename)
  if not (OUT/filename).exists():bpy.ops.render.render(write_still=True)
  frames.append(dict(file_path=filename,transform_matrix=[list(row) for row in cam.matrix_world]))
  print('CAPTURE_READY',MODE,index+1,len(views),flush=True)

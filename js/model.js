@@ -43,7 +43,7 @@ export function validateGallery(input) {
       ids.add(p.id);if(ASSETS[p.asset]?.type!=='tree')throw Error('Onbekend boommodel.');
       return {id:p.id,asset:p.asset,x:bounded(p.x,-40,40,10),z:bounded(p.z,-40,80,0),height:bounded(p.height,3,25,10),rotation:bounded(p.rotation,0,360,0)};
     });
-    return {id:room.id,...(concept?{architecture:'concept'}:{}),...(room.surfaces?{surfaces:validateSurfaces(room.surfaces)}:{}),capacity,title:cleanText(room.title,'Nieuwe zaal'),accent:color(room.accent,'#88917c'),wall:color(room.wall,'#eee8dc'),light:bounded(room.light,concept?0:.6,concept?2:1.5,1),pedestals,plants,furniture,trees,works:room.works.map((work) => {
+    return {id:room.id,...(concept?{architecture:'concept',palette:['approved','ivory','greige'].includes(room.palette)?room.palette:'approved'}:{}),...(room.surfaces?{surfaces:validateSurfaces(room.surfaces)}:{}),capacity,title:cleanText(room.title,'Nieuwe zaal'),accent:color(room.accent,'#88917c'),wall:color(room.wall,'#eee8dc'),light:bounded(room.light,concept?0:.6,concept?2:1.5,1),pedestals,plants,furniture,trees,works:room.works.map((work) => {
       if (!work || typeof work.id !== 'string' || ids.has(work.id)) throw Error('Ieder werk heeft een unieke code nodig.');
       ids.add(work.id);
       if (!Number.isInteger(work.slot) || work.slot < 0 || work.slot >= capacity || slots.has(work.slot)) throw Error('Ieder werk heeft een eigen beschikbare wandplek nodig.');

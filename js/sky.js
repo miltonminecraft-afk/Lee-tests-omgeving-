@@ -41,7 +41,7 @@ export function createGallerySky(scene,radius=18){
         #include <colorspace_fragment>
       }`});
   const mesh=new THREE.Mesh(new THREE.SphereGeometry(radius,48,32),material);mesh.renderOrder=-2;scene.add(mesh);
-  return {update({cloudCover=28,sunDirection,brightness=1}={}){uniforms.cloud.value=Math.max(0,Math.min(1,cloudCover/100));if(sunDirection)uniforms.sun.value.fromArray(sunDirection).normalize();uniforms.brightness.value=brightness;},tick(seconds){uniforms.time.value=seconds;},dispose(){mesh.geometry.dispose();material.dispose();scene.remove(mesh);}};
+  return {mesh,update({cloudCover=28,sunDirection,brightness=1}={}){uniforms.cloud.value=Math.max(0,Math.min(1,cloudCover/100));if(sunDirection)uniforms.sun.value.fromArray(sunDirection).normalize();uniforms.brightness.value=brightness;},tick(seconds){uniforms.time.value=seconds;},dispose(){mesh.geometry.dispose();material.dispose();scene.remove(mesh);}};
 }
 
 export function createVisitorWeather(onWeather,onStatus){
