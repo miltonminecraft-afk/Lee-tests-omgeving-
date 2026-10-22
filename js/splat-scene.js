@@ -68,7 +68,7 @@ export class GalleryScene extends ConceptScene {
   this.world.add(sky,sun,sun.target,bounce);this.daylight={sky,sun,bounce};
   this.skySettings={cloudCover:this.lighting==='night'?8:28,sunDirection:this.lighting==='night'?[.4,-.5,-.3]:[-.4,.75,-.3]};
   super.setDaylight(this.lighting==='night'?0:1);
-  this.spotlights=Array.from({length:this.mobile?4:12},()=>{const light=new THREE.SpotLight('#ffe4ba',0,9,.5,.3,2);this.world.add(light,light.target);return light;});
+  this.spotlights=Array.from({length:this.mobile?8:12},()=>{const light=new THREE.SpotLight('#ffe4ba',0,9,.5,.3,2);this.world.add(light,light.target);return light;});
   const works=room.works.map(async work=>{
    let texture=this.texCache.get(work.src);
    if(!texture){texture=await new THREE.TextureLoader().loadAsync(work.src);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=8;this.texCache.set(work.src,texture);}

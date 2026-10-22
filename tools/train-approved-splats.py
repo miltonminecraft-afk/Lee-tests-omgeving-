@@ -3,7 +3,7 @@ import argparse,ctypes,json,os,subprocess,time,shutil,traceback
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent.parent
-STATE=ROOT/'.local/splat-training-v2';STATE.mkdir(parents=True,exist_ok=True)
+STATE=ROOT/'.local/splat-training-v3';STATE.mkdir(parents=True,exist_ok=True)
 BLENDER=Path(r'E:\Raceplannet-Splats\tools\blender-4.5.0-windows-x64\blender.exe')
 BRUSH=Path(r'E:\Raceplannet-Splats\tools\brush-build-target-llvm\release\brush-cli.exe')
 NODE=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
@@ -63,7 +63,7 @@ def main():
    finally:kernel.CloseHandle(handle)
  for label,mode,palette,lighting,iterations in JOBS:
   warm_start=palette!='approved' or lighting=='night'
-  dataset=ROOT/'.local/splat-capture-v2'/((mode if palette=='approved' else mode+'-'+palette)+('-night' if lighting=='night' else ''))
+  dataset=ROOT/'.local/splat-capture-v3'/((mode if palette=='approved' else mode+'-'+palette)+('-night' if lighting=='night' else ''))
   output=STATE/label;output.mkdir(exist_ok=True)
   result=output/f'export_{iterations}.ply'
   if not result.exists():

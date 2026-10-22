@@ -17,6 +17,8 @@ for palette in ('approved','ivory','greige'):
   label=palette+('-night' if lighting=='night' else '')
   source=ROOT/'.local/splat-training-v3'/label/(label+'.spz')
   if args.preview and not source.exists():source=ROOT/'.local/splat-training-v2'/label/(label+'.spz')
+  refined=ROOT/'.local/splat-training-v3/approved-night-refined/approved-night.spz'
+  if label=='approved-night' and refined.exists():source=refined
   manifest['rooms'][palette][lighting]=copy(source,f'rooms/{palette}-{lighting}.spz')
 bench=dict(nativeHeight=.48,width=2.44,depth=.64)
 for lighting in ('day','night'):
