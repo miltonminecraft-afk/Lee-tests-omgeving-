@@ -1,0 +1,496 @@
+{
+  "version": 1,
+  "rooms": [
+    {
+      "id": "portraits",
+      "capacity": 24,
+      "title": "Kleur & identiteit",
+      "accent": "#88917c",
+      "wall": "#f5efe5",
+      "light": 1,
+      "pedestals": [
+        {
+          "id": "portraits-plinth-1",
+          "title": "Sokkel 1",
+          "x": -4.8,
+          "z": 4.6,
+          "height": 1.1,
+          "width": 0.7,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "portraits-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.8,
+          "z": 4.6,
+          "height": 0.7,
+          "width": 0.6,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "aebce9c9-6118-4df7-9306-325b24791117",
+          "title": "Sokkel 3",
+          "x": -4.8,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "724de259-f564-4353-b7e4-ad7aa5867bca",
+          "title": "Sokkel 4",
+          "x": 4.8,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "2dc35d3f-f92e-488f-b383-5412de77f3ff",
+          "title": "Sokkel 5",
+          "x": -1.6,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "dae79ac1-0ed7-474c-a13f-16d9f30b796b",
+          "title": "Sokkel 6",
+          "x": 1.6,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "098a7c05-ec75-4e92-b9a1-dfc2993fb312",
+          "title": "Sokkel 7",
+          "x": -4.8,
+          "z": 1.4000000000000001,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "21192122-9816-4b31-a181-374b33a41709",
+          "title": "Sokkel 8",
+          "x": 4.8,
+          "z": 1.4000000000000001,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        }
+      ],
+      "plants": [
+        {
+          "id": "chosen-potted_plant_01",
+          "asset": "potted_plant_01",
+          "x": -5,
+          "y": 0,
+          "z": 2,
+          "height": 0.6,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "chosen-potted_plant_02",
+          "asset": "potted_plant_02",
+          "x": 5,
+          "y": 0,
+          "z": 2,
+          "height": 1.3,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "chosen-potted_plant_04",
+          "asset": "potted_plant_04",
+          "x": -5,
+          "y": 0,
+          "z": -2,
+          "height": 0.4,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "chosen-ivy",
+          "asset": "hanging_ivy",
+          "x": 4.8,
+          "y": 2.4,
+          "z": -7,
+          "height": 1.2,
+          "rotation": 0,
+          "color": "#a77257"
+        }
+      ],
+      "furniture": [
+        {
+          "id": "chosen-lounge-chair",
+          "asset": "mid_century_lounge_chair",
+          "x": -1.7,
+          "z": 0.8,
+          "height": 1.17,
+          "rotation": 30
+        },
+        {
+          "id": "chosen-coffee-table",
+          "asset": "modern_coffee_table_01",
+          "x": -7,
+          "z": 0,
+          "height": 0.45,
+          "rotation": 90
+        }
+      ],
+      "trees": [
+        {
+          "id": "chosen-island_tree_01",
+          "asset": "island_tree_01",
+          "x": -24,
+          "z": -2,
+          "height": 14,
+          "rotation": 20
+        },
+        {
+          "id": "chosen-island_tree_02",
+          "asset": "island_tree_02",
+          "x": 10,
+          "z": -25,
+          "height": 17,
+          "rotation": 20
+        },
+        {
+          "id": "chosen-jacaranda_tree",
+          "asset": "jacaranda_tree",
+          "x": 25,
+          "z": 10,
+          "height": 17,
+          "rotation": 20
+        }
+      ],
+      "works": [
+        {
+          "id": "kunst2",
+          "slot": 0,
+          "title": "Portret met rood masker",
+          "kind": "painting",
+          "src": "images/slides/kunst2.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst5",
+          "slot": 1,
+          "title": "Portret met bloemenmasker",
+          "kind": "painting",
+          "src": "images/slides/kunst5.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst7",
+          "slot": 2,
+          "title": "Portret op rood",
+          "kind": "painting",
+          "src": "images/slides/kunst7.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst10",
+          "slot": 3,
+          "title": "Portret met blauwe bloemen",
+          "kind": "painting",
+          "src": "images/slides/kunst10.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst3",
+          "slot": 4,
+          "title": "Portret op licht doek",
+          "kind": "painting",
+          "src": "images/slides/kunst3.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst4",
+          "slot": 5,
+          "title": "Portret met groene bril",
+          "kind": "painting",
+          "src": "images/slides/kunst4.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst6",
+          "slot": 6,
+          "title": "Portret met leliemasker",
+          "kind": "painting",
+          "src": "images/slides/kunst6.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst9",
+          "slot": 7,
+          "title": "Portret in groen en rood",
+          "kind": "painting",
+          "src": "images/slides/kunst9.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "ceramics",
+      "capacity": 24,
+      "title": "Vorm & verbeelding",
+      "accent": "#b78b7a",
+      "wall": "#f5efe5",
+      "light": 1,
+      "pedestals": [
+        {
+          "id": "ceramics-plinth-1",
+          "title": "Sokkel 1",
+          "x": -4.8,
+          "z": 4.6,
+          "height": 1.1,
+          "width": 0.7,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "ceramics-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.8,
+          "z": 4.6,
+          "height": 0.7,
+          "width": 0.6,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "9d631f33-6114-49bd-8901-035bf4a74636",
+          "title": "Sokkel 3",
+          "x": -4.8,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "5bf60156-528e-4fe0-ad22-e9b9a4a11cda",
+          "title": "Sokkel 4",
+          "x": 4.8,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "299b6439-7089-4afc-8bdc-0d7904986694",
+          "title": "Sokkel 5",
+          "x": -1.6,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "39a2172d-4366-4445-8b29-8cdbb9ffa7bb",
+          "title": "Sokkel 6",
+          "x": 1.6,
+          "z": -1.8,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "1ac75003-3aa3-4b83-a375-123a60907186",
+          "title": "Sokkel 7",
+          "x": -4.8,
+          "z": 1.4000000000000001,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "c279e633-2f45-4933-bdfc-ea48bcc96ede",
+          "title": "Sokkel 8",
+          "x": 4.8,
+          "z": 1.4000000000000001,
+          "height": 1,
+          "width": 0.65,
+          "shape": "square",
+          "color": "#e4d9c7",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        }
+      ],
+      "plants": [],
+      "furniture": [],
+      "trees": [],
+      "works": [
+        {
+          "id": "kunst1",
+          "slot": 0,
+          "title": "Schoenvaas met rozen",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst1.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst8",
+          "slot": 2,
+          "title": "Sandaal met sculpturale hak",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst8.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst11",
+          "slot": 3,
+          "title": "Laars met geschilderd portret",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst11.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        }
+      ]
+    }
+  ]
+}

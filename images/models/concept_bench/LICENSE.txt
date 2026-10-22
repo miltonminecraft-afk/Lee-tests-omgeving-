@@ -1,0 +1,1 @@
+Original bench geometry and procedural walnut texture made for the Lee Mobero gallery from its concept reference. No third-party model dependencies.

@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+const edit=async(file,a,b)=>{const text=await fs.readFile(file,'utf8');if(!text.includes(a))throw Error('Missing anchor '+file);await fs.writeFile(file,text.replace(a,b));};
+await edit('js/model.js',"return {id:room.id,...(concept?{architecture:'concept'}:{}),capacity", "return {id:room.id,...(concept?{architecture:'concept'}:{}),...(room.surfaces?{surfaces:validateSurfaces(room.surfaces)}:{}),capacity");
+await edit('admin/app.js',"import {roomLayout}","import {renderMaterials} from '/admin/materials.js';\nimport {roomLayout}");
+await edit('admin/app.js',"  if(tab==='room'){","  if(tab==='materials'){renderMaterials(area,r,scene,changed,api,toast);return;}\n  if(tab==='room'){");
+await edit('admin/index.html','<button data-tab="work">','<button data-tab="materials">Materialen</button><button data-tab="work">');
+await edit('tools/server.mjs',"if(pathname==='/admin/app.js')return serveFile(res,path.join(root,'admin/app.js'));", "if(['/admin/app.js','/admin/materials.js'].includes(pathname))return serveFile(res,path.join(root,pathname.slice(1)));");
+await edit('tools/server.mjs',"img-src 'self' data: blob: https://dl.polyhaven.org;", "img-src 'self' data: blob: https://dl.polyhaven.org https://cdn.polyhaven.com;");
+await edit('index.html','<option value="night">Nacht</option>','<option value="night">Nacht</option><option value="rain">Regen</option><option value="heavy-rain">Harde regen</option>');
+await edit('index.html','<button id="visitorWeather"','<a id="weatherCredit" class="weather-credit" href="https://www.met.no/en/free-meteorological-data/Licensing-and-crediting" target="_blank" rel="noopener" hidden>Weer: MET Norway · CC BY 4.0</a><button id="visitorWeather"');
+await edit('js/public.js',"$('visitorWeather').onclick=()=>scene?.weather.start();", "$('visitorWeather').onclick=()=>{$('weatherCredit').hidden=false;scene?.weather.start();};");
+await fs.appendFile('styles/gallery.css','\n.material-controls{display:grid;gap:12px}.material-controls input[type=search]{padding:12px;border:1px solid var(--line);width:100%;background:#fff9}.material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.material-card{padding:0;border:1px solid var(--line);background:#fff8;cursor:pointer;text-align:left}.material-card img{width:100%;aspect-ratio:1;object-fit:cover}.material-card span{display:block;padding:8px;font-size:11px}.material-card:disabled{opacity:.5;cursor:wait}.weather-credit{font-size:9px;max-width:105px;align-self:center;color:var(--ink)}\n');

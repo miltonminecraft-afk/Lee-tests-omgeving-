@@ -1,0 +1,10 @@
+{
+  "engine": "Blender Cycles 4.5",
+  "samples": 64,
+  "diffuseBounces": 6,
+  "range": 4,
+  "width": 16,
+  "front": 14,
+  "back": -5,
+  "movableObjectsBaked": false
+}

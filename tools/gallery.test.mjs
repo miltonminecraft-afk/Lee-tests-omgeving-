@@ -7,7 +7,18 @@ import {validateGallery,addRoom,addPedestal,addWork,swapSlot,setWorkCapacity,set
 import {roomLayout,isFreeFloor,orderedWorks} from '../js/layout.js';
 import {viewingDistances,inspectedWork} from '../js/viewing.js';
 import {createGalleryServers} from './server.mjs';
-const source=JSON.parse(await fs.readFile(new URL('../content/gallery.json',import.meta.url),'utf8'));
+const source=JSON.parse(await fs.readFile(new URL('./fixtures/gallery-legacy.json',import.meta.url),'utf8'));
+
+test('Chosen models retain independent transforms and removals through export/import',()=>{
+ const g=validateGallery(source),r=g.rooms[0];
+ r.plants=[{id:'plant-01',asset:'potted_plant_01',x:1,z:2,height:.6,rotation:35},{id:'plant-02',asset:'potted_plant_02',x:-1,z:3,height:1.2,rotation:150}];
+ r.furniture=[{id:'chair',asset:'mid_century_lounge_chair',x:-2,z:1,height:1.17,rotation:30}];
+ r.trees=[{id:'tree',asset:'jacaranda_tree',x:15,z:-12,height:13,rotation:65}];
+ const saved=validateGallery(JSON.parse(JSON.stringify(g))).rooms[0];
+ assert.equal(saved.plants[0].asset,'potted_plant_01');assert.equal(saved.plants[1].rotation,150);assert.equal(saved.furniture[0].x,-2);assert.equal(saved.trees[0].x,15);assert.equal(saved.trees[0].z,-12);
+ r.plants.splice(0,1);assert.equal(validateGallery(g).rooms[0].plants[0].id,'plant-02');
+ for(const mutate of [()=>r.trees[0].asset='https://bad.invalid/tree.gltf',()=>r.trees[0].asset='potted_plant_01',()=>{r.trees[0].asset='island_tree_02';r.trees[0].id='chair';}]){mutate();assert.throws(()=>validateGallery(g));}
+});
 
 test('Artwork information appears only close up and facing the work, on every wall and screen shape',()=>{
   const room={capacity:24,works:[{id:'back',slot:0},{id:'left',slot:4},{id:'right',slot:11},{id:'front',slot:18}]};

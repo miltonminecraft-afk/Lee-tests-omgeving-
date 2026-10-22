@@ -1,0 +1,25 @@
+Lee Mobero — Gaussian-splat environment brief
+Prepared 2026-10-21. No generated splat asset is present yet.
+
+STYLE REFERENCE
+gallery-concept.png is the previously approved visual direction. Use its architecture, material palette and daylight. Its paintings, frames, bench and plinths must not become part of the static environment.
+
+GENERATION PROMPT
+Create an empty, fully enclosed, walkable contemporary art gallery with photographic architectural realism. Warm ivory lime plaster walls with fine natural surface variation, pale honed limestone floor slabs, timber-framed rectangular skylights, restrained black ceiling tracks, a sage-green rounded arch opening into a second full-size gallery with muted clay-pink plaster. Soft directional daylight, plausible indirect light, contact shadows and subtle stone reflections. Preserve the calm, intimate atmosphere and materials of the supplied reference. Long uninterrupted wall surfaces for future paintings. Spacious circulation for independently placed sculptures. Complete walls behind the starting camera, a continuous floor, a complete ceiling, and clean doorway edges. Both rooms must be coherent and visible through the open connecting doorway. Inspectable from human eye height throughout the walkable area. No paintings, picture frames, murals, sculptures, pedestals, plants, furniture, people, labels, logos or text. No mirrors. Do not bake furnishings or artworks into the environment. This is architecture for a freely navigable 3D website, not a single fixed camera image.
+
+ASSET HANDOFF
+Export a full-resolution SPZ and a lower-resolution SPZ, plus a collider GLB from the SAME generated world. Preserve their common origin, orientation and scale. Inspect doorway alignment and real metre scale before attaching editable artworks. Export neighbouring sections together or record their transforms explicitly.
+
+INTEGRATION PLAN (not implemented)
+Use Spark with existing Three.js. Keep artwork images, frames, plinths, ceramics and plants as separate editable objects. Maintain one registered coordinate system for splats, colliders and artwork anchors. Load the current and visible neighbouring rooms before displaying the entrance view. Use lower detail for distant rooms and mobile devices. Verify the postprocessing pipeline with Spark instead of assuming current SSAO and tone mapping are compatible. Use explicit collision geometry and reachable artwork positions; visual splats alone are not a wall collision system.
+
+ACCEPTANCE
+Compare with gallery-concept.png from the entrance and at artwork viewing distance. Walk a complete loop, look behind, and look through both sides of the connecting doorway. Reject holes, floating fragments, duplicated details, smeared surfaces, baked artwork or blocked passages. Add and remove paintings and plinths in the existing admin without changing the environment file. Verify depth occlusion, artwork colour, transition stability, autoplay ordering and mobile performance. A splat count or an '8K' label is not proof of photographic quality.
+
+RESEARCH SOURCES
+https://www.worldlabs.ai/blog/bigger-better-worlds
+https://docs.worldlabs.ai/marble/export/specs
+https://marble.worldlabs.ai/pricing
+https://sparkjs.dev/docs/overview/
+
+Marble's listed plans currently place splat export under Standard and commercial rights under Pro. Confirm account entitlement before generation intended for the public artist website. No subscription or credit purchase has been made.

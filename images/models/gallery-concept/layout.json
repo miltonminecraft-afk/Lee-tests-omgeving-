@@ -1,0 +1,207 @@
+{
+  "assets": [
+    {
+      "asset": "modern_coffee_table_01",
+      "position": [
+        -4.24975,
+        -0.00012,
+        -3.99998
+      ],
+      "height": 0.39,
+      "rotation": 86.0
+    },
+    {
+      "asset": "concept_bench",
+      "position": [
+        -3.0,
+        0.0,
+        -2.8
+      ],
+      "height": 0.48,
+      "rotation": 33.0
+    },
+    {
+      "asset": "island_tree_01",
+      "position": [
+        -17.71079,
+        0.0,
+        -4.40192
+      ],
+      "height": 14.0,
+      "rotation": 335.0
+    },
+    {
+      "asset": "island_tree_02",
+      "position": [
+        -0.18605,
+        0.0,
+        -17.76815
+      ],
+      "height": 17.0,
+      "rotation": 20.0
+    },
+    {
+      "asset": "jacaranda_tree",
+      "position": [
+        18.47849,
+        0.0,
+        -19.52846
+      ],
+      "height": 17.0,
+      "rotation": 70.0
+    },
+    {
+      "asset": "mid_century_lounge_chair",
+      "position": [
+        2.63797,
+        -0.0,
+        -2.35423
+      ],
+      "height": 1.16908,
+      "rotation": 325.0
+    },
+    {
+      "asset": "potted_plant_01",
+      "position": [
+        3.65533,
+        -0.01371,
+        -3.8469
+      ],
+      "height": 1.35016,
+      "rotation": 0.0
+    },
+    {
+      "asset": "potted_plant_02",
+      "position": [
+        1.25392,
+        5e-05,
+        -5.59162
+      ],
+      "height": 0.84118,
+      "rotation": 0.0
+    },
+    {
+      "asset": "potted_plant_04",
+      "position": [
+        -4.05,
+        0.00038,
+        -5.94157
+      ],
+      "height": 0.26746,
+      "rotation": 0.0
+    },
+    {
+      "asset": "hanging_ivy",
+      "position": [
+        5.31956,
+        2.40596,
+        -9.49454
+      ],
+      "height": 1.23139,
+      "rotation": 342.0
+    }
+  ],
+  "pedestals": [
+    {
+      "position": [
+        2.92046,
+        0.52,
+        -8.04035
+      ],
+      "height": 1.0399999618530273,
+      "width": 0.6600000262260437
+    },
+    {
+      "position": [
+        4.21743,
+        0.365,
+        -7.98694
+      ],
+      "height": 0.7300000190734863,
+      "width": 0.6600000262260437
+    }
+  ],
+  "works": [
+    {
+      "title": "Portret op rood",
+      "position": [
+        -2.7,
+        2.02,
+        -6.86
+      ],
+      "rotation": 0.0
+    },
+    {
+      "title": "Portret met blauwe bloemen",
+      "position": [
+        -0.05,
+        2.02,
+        -6.86
+      ],
+      "rotation": 0.0
+    },
+    {
+      "title": "Portret met rood masker",
+      "position": [
+        -4.89369,
+        2.02,
+        -2.8
+      ],
+      "rotation": 1.5009831190109253
+    },
+    {
+      "title": "Portret met bloemenmasker",
+      "position": [
+        -4.72237,
+        2.02,
+        -5.25
+      ],
+      "rotation": 1.5009831190109253
+    },
+    {
+      "title": "Portret op licht doek",
+      "position": [
+        -2.8,
+        2.02,
+        7.94
+      ],
+      "rotation": 3.1415927410125732
+    },
+    {
+      "title": "Portret met groene bril",
+      "position": [
+        0.0,
+        2.02,
+        7.94
+      ],
+      "rotation": 3.1415927410125732
+    },
+    {
+      "title": "Portret met leliemasker",
+      "position": [
+        2.8,
+        2.02,
+        7.94
+      ],
+      "rotation": 3.1415927410125732
+    },
+    {
+      "title": "Portret in groen en rood",
+      "position": [
+        4.61,
+        2.02,
+        2.0
+      ],
+      "rotation": -1.5707963705062866
+    },
+    {
+      "title": "Adjoining gallery portrait",
+      "position": [
+        -8.1,
+        2.0,
+        1.66
+      ],
+      "rotation": 0.0
+    }
+  ]
+}

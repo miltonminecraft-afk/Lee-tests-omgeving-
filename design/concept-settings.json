@@ -1,0 +1,16 @@
+{
+  "alcove_angle_degrees": -18,
+  "bench_angle_degrees": 33,
+  "camera_position": [-2.0, -3.5, 1.62],
+  "camera_target": [-2.0, 7.0, 1.83],
+  "camera_lens_mm": 26.5,
+  "samples": 256,
+  "materials": {
+    "sand_plaster": {"color": [0.63, 0.52, 0.38], "roughness": 0.88},
+    "sage_plaster": {"color": [0.25, 0.285, 0.22], "roughness": 0.89},
+    "terracotta_plaster": {"color": [0.46, 0.225, 0.135], "roughness": 0.88},
+    "limestone": {"color": [0.64, 0.54, 0.40], "roughness": 0.43},
+    "walnut": {"color": [0.13, 0.063, 0.027], "roughness": 0.36},
+    "oak": {"color": [0.32, 0.20, 0.105], "roughness": 0.54}
+  }
+}

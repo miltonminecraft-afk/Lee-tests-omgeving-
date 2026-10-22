@@ -2,5 +2,5 @@
   "name": "lee-mobero-gallery",
   "private": true,
   "type": "module",
-  "scripts": {"start": "node tools/server.mjs", "test": "node --test tools/gallery.test.mjs"}
+  "scripts": {"start": "node tools/server.mjs", "test": "node --test --experimental-test-isolation=none tools/gallery.test.mjs tools/environment.test.mjs tools/concept.test.mjs tools/material-library.test.mjs"}
 }

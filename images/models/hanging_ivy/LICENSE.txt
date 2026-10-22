@@ -1,0 +1,1 @@
+Original trailing ivy model created for the Lee Mobero gallery. No third-party mesh or texture dependencies.

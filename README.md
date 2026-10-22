@@ -1,5 +1,13 @@
 # Lee Mobero — digitale galerij
 
+## Huidige versie: Blender-ruimte en materiaalbeheer
+
+De website gebruikt nu de geëxporteerde Blender-ruimte (`images/models/gallery-concept/room.glb`) met afzonderlijk bewerkbare kunstwerken, sokkels, meubels, planten en bomen. De beheerbibliotheek bevat acht Poly Haven-salontafels en 869 materiaalopties. Negen materiaalsets staan lokaal klaar; overige sets worden op aanvraag via de beheerserver gedownload. De materiaalkeuze ondersteunt 2K/4K/8K-kleurtextures, 2K-normal/roughnessmaps, patroonschaal en reliëfsterkte. De oorspronkelijke ruimtematerialen zijn op 2K gebakken.
+
+GitHub Pages publiceert uitsluitend de bezoekerssite en de daar gebruikte modellen/materialen. De volledige assetbibliotheek en beheercode staan wel in deze repository. Loginbestanden, privéconcepten en grote Blender-werkbestanden blijven lokaal. Live weer op bezoekerslocatie en materiaaldownloads vereisen de Node-server; GitHub Pages ondersteunt deze serverfuncties niet. Dag/nacht, handmatige weerskeuze en daglicht werken wel op de statische site.
+
+De onderstaande ontwerpnotities beschrijven deels het eerdere prototype; de actuele Blender-ruimte heeft een vaste geometrie, twaalf actieve kunstspots en realtime PBR-verlichting. Dit is geen Gaussian-splat- of path-tracingrenderer.
+
 Een uitbreidbare 3D-galerij met de 11 originele afbeeldingen uit [Leemobero/Leemobero](https://github.com/Leemobero/Leemobero), aanpasbare lijsten en een afzonderlijke beheerapplicatie. Het ontwerp is een nieuwe uitwerking; de huidige leemobero.com is niet gewijzigd.
 
 ![Werkende 3D-galerij in de browser](design/gallery-preview.jpg)

@@ -3,3 +3,12 @@ node_modules/
 .env
 *.log
 dist/
+*.blend
+*.blend1
+*.blend2
+design/assets/
+design/*before*
+content/*.before-concept.json
+images/models/gallery-concept/material-*.png
+images/models/jacaranda_tree/jacaranda_tree.bin
+*.download
