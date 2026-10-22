@@ -1,5 +1,5 @@
 """Sequential, resumable local GPU queue. No upload or source-design changes."""
-import argparse,ctypes,json,os,subprocess,time,shutil,traceback
+import argparse,ctypes,json,math,os,subprocess,time,shutil,traceback
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent.parent
@@ -29,7 +29,7 @@ def training_args(dataset,output,mode,iterations,warm_start):
   '--growth-stop-iter',0 if warm_start else iterations-800,
   '--sh-degree',2,'--render-mode','mip','--alpha-mode','transparent',
   '--max-scene-batch-cache-size','1GiB','--eval-split-every',8,
-  '--eval-every',iterations,'--eval-save-to-disk','--export-every',iterations,'--export-path',output]
+  '--eval-every',iterations,'--eval-save-to-disk','--export-every',math.gcd(2000,iterations),'--export-path',output]
  if warm_start:
   # Disable geometry noise, growth and refinement; train the color coefficients.
   args+=['--lr-mean','1e-10','--lr-mean-end','1e-10','--lr-scale','0',

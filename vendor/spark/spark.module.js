@@ -10802,14 +10802,21 @@ var SplatMesh = class SplatMesh extends SplatGenerator {
 			const worldToView = viewToWorld.clone().invert();
 			if (this.context.worldToView.updateFromMatrix(worldToView) && this.enableWorldToView) updated = true;
 			const viewToObjectMatrix = new THREE.Matrix4().compose(this.context.transform.translate.value, this.context.transform.rotate.value, new THREE.Vector3().setScalar(this.context.transform.scale.value)).invert().multiply(viewToWorld);
-			if (this.context.viewToObject.updateFromMatrix(viewToObjectMatrix) && (this.enableViewToObject || this.context.splats.hasRgbDir())) updated = true;
+			// SH appearance depends on the camera origin, not camera rotation.
+			const origin = this.context.viewToObject.translate.value;
+			const ox = origin.x, oy = origin.y, oz = origin.z;
+			const viewToObjectChanged = this.context.viewToObject.updateFromMatrix(viewToObjectMatrix);
+			if (viewToObjectChanged && (this.enableViewToObject || this.context.splats.hasRgbDir() && (origin.x !== ox || origin.y !== oy || origin.z !== oz))) updated = true;
 		} else {
 			if (this.context.covTransform.update(this)) updated = true;
 			if (this.context.covViewToWorld.updateFromMatrix(viewToWorld) && this.enableViewToWorld) updated = true;
 			const worldToView = viewToWorld.clone().invert();
 			if (this.context.covWorldToView.updateFromMatrix(worldToView) && this.enableWorldToView) updated = true;
 			const viewToObjectMatrix = this.matrixWorld.clone().invert().multiply(viewToWorld);
-			if (this.context.covViewToObject.updateFromMatrix(viewToObjectMatrix) && (this.enableViewToObject || this.context.splats.hasRgbDir())) updated = true;
+			const origin = this.context.covViewToObject.offset.value;
+			const ox = origin.x, oy = origin.y, oz = origin.z;
+			const viewToObjectChanged = this.context.covViewToObject.updateFromMatrix(viewToObjectMatrix);
+			if (viewToObjectChanged && (this.enableViewToObject || this.context.splats.hasRgbDir() && (origin.x !== ox || origin.y !== oy || origin.z !== oz))) updated = true;
 		}
 		const newRecolor = new THREE.Vector4(this.recolor.r, this.recolor.g, this.recolor.b, this.opacity);
 		if (!newRecolor.equals(this.context.recolor.value)) {
@@ -11908,7 +11915,8 @@ var SplatAccumulator = class SplatAccumulator {
 							]));
 							roots.push(output);
 						}
-						if (!generator) throw new Error("Generator must be provided");
+						// Covariance-only frames are valid for packed accumulation too.
+						if (!generator && !covGenerator) throw new Error("Generator must be provided");
 					}
 					if (generator) {
 						const outputDepth = outputSplatDepth(generator.outputs.gsplat, SplatAccumulator.viewCenterUniform, SplatAccumulator.viewDirUniform, SplatAccumulator.sortRadialUniform);
@@ -12522,7 +12530,9 @@ var SparkRenderer = class SparkRenderer extends THREE.Mesh {
 		if (this.ownsTimer) this.timer.update();
 		const center = camera.getWorldPosition(new THREE.Vector3());
 		const dir = camera.getWorldDirection(new THREE.Vector3());
-		const viewChanged = center.distanceTo(this.sortedCenter) > .001 || dir.dot(this.sortedDir) < .999;
+		// Radial depth and world-space accumulation are invariant under a pure pan.
+		// The render matrix still updates each frame; directional sorting must rebuild.
+		const viewChanged = center.distanceTo(this.sortedCenter) > .001 || !(this.sortRadial ?? true) && dir.dot(this.sortedDir) < .999;
 		const next = this.accumulators.pop();
 		if (!next) throw new Error("No next accumulator");
 		if (next === this.current) throw new Error("Next accumulator is the same as the current accumulator");

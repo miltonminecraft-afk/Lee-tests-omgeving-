@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "frame_walnut",
+      "type": "furniture",
+      "title": "walnut splat frame",
+      "source": "design/gallery-concept-refined.blend",
+      "sourceScene": "design/gallery-concept-refined.blend",
+      "license": "tools/frame-splat-LICENSE.txt",
+      "resolution": 3072,
+      "frames": 168,
+      "samples": 128,
+      "iterations": 12000,
+      "maxSplats": 350000
+    },
+    {
+      "id": "frame_black",
+      "type": "furniture",
+      "title": "black splat frame",
+      "source": "design/gallery-concept-refined.blend",
+      "sourceScene": "design/gallery-concept-refined.blend",
+      "license": "tools/frame-splat-LICENSE.txt",
+      "resolution": 3072,
+      "frames": 168,
+      "samples": 128,
+      "iterations": 12000,
+      "maxSplats": 350000
+    },
+    {
+      "id": "frame_brass",
+      "type": "furniture",
+      "title": "brass splat frame",
+      "source": "design/gallery-concept-refined.blend",
+      "sourceScene": "design/gallery-concept-refined.blend",
+      "license": "tools/frame-splat-LICENSE.txt",
+      "resolution": 3072,
+      "frames": 168,
+      "samples": 128,
+      "iterations": 12000,
+      "maxSplats": 350000
+    }
+  ]
+}

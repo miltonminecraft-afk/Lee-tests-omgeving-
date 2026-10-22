@@ -1,0 +1,1 @@
+Original parametric picture-frame profiles created for the Lee Mobero gallery. Wood material derives from the existing approved gallery scene. No third-party frame model dependencies.

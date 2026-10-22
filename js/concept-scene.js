@@ -106,7 +106,9 @@ export class GalleryScene extends BaseScene {
   const localDir=local(back.clone().add(dir)).sub(local(back)).normalize();
   const swivel=new THREE.Mesh(new THREE.SphereGeometry(.024,16,12),this.materials.dark);swivel.position.copy(local(back));fixture.add(swivel);
   const body=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.19,32),this.materials.dark);body.position.copy(local(back.clone().addScaledVector(dir,.095)));body.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),localDir);fixture.add(body);
-  const lensPos=back.clone().addScaledVector(dir,.187);
+  // The cylinder ends at .19 m. Keep its luminous aperture in front of that
+  // cap, otherwise the black metal cap hides the light-emitting lens.
+  const lensPos=back.clone().addScaledVector(dir,.191);
   const lens=new THREE.Mesh(new THREE.CircleGeometry(.036,32),new THREE.MeshStandardMaterial({color:'#fff0d8',emissive:'#ffcc88',emissiveIntensity:4,roughness:.2}));lens.position.copy(local(lensPos));lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),localDir);fixture.add(lens);
   if(!this.spotHaloTexture){const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const ctx=canvas.getContext('2d'),gradient=ctx.createRadialGradient(32,32,1,32,32,32);gradient.addColorStop(0,'rgba(255,230,184,.8)');gradient.addColorStop(.25,'rgba(255,215,155,.18)');gradient.addColorStop(1,'rgba(255,210,150,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);this.spotHaloTexture=new THREE.CanvasTexture(canvas);this.spotHaloTexture.colorSpace=THREE.SRGBColorSpace;}
   const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:this.spotHaloTexture,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.3}));halo.position.copy(local(lensPos.clone().addScaledVector(dir,.008)));halo.scale.set(.13,.13,1);fixture.add(halo);

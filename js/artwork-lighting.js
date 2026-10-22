@@ -16,9 +16,11 @@ export function encodeArtworkSpots(sources){
 }
 // CPU reference used to verify movement/removal and wall isolation in tests.
 export function artworkIrradiance(point,source){
- const s=spotRecord(source),v=point.map((p,i)=>p-s.position[i]),d=Math.hypot(...v);
+ const s=spotRecord(source);
  const dot=(a,b)=>a.reduce((n,v,i)=>n+v*b[i],0);
  const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
- const mask=1-smooth(.06,.24,Math.abs(dot(point.map((v,i)=>v-s.target[i]),s.normal)));
+ const wallDistance=dot(point.map((v,i)=>v-s.target[i]),s.normal);
+ const v=point.map((p,i)=>p-s.normal[i]*wallDistance-s.position[i]),d=Math.hypot(...v);
+ const mask=1-smooth(.60,.90,Math.abs(wallDistance));
  return smooth(s.outer,s.inner,dot(v,s.direction)/Math.max(.01,d))*mask*Math.max(0,-dot(v,s.normal)/Math.max(.01,d))*s.power/(1+d*d*.18);
 }

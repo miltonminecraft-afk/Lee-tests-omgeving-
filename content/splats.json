@@ -1,5 +1,5 @@
 {
-  "revision": "preview-1792677034",
+  "revision": "dense-four-million-20261023",
   "rooms": {
     "approved": {
       "day": "images/splats/rooms/approved-day.spz",
@@ -19,18 +19,42 @@
       "nativeHeight": 0.48,
       "width": 2.44,
       "depth": 0.64,
-      "day": "images/splats/objects/concept_bench-day.spz",
-      "night": "images/splats/objects/concept_bench-night.spz"
+      "day": "images/splats/objects/concept_bench-day-million.sog",
+      "night": "images/splats/objects/concept_bench-day-million.sog",
+      "precision": "extended",
+      "nightFallback": true
     },
     "island_tree_01": {
-      "day": "images/splats/objects/island_tree_01-day.spz",
+      "day": "images/splats/objects/island_tree_01-day-detail.sog",
       "nativeHeight": 5.027446746826172,
       "width": 4.755149841308594,
       "depth": 4.817679405212402,
-      "night": "images/splats/objects/island_tree_01-night.spz"
+      "night": "images/splats/objects/island_tree_01-day-detail.sog",
+      "precision": "extended",
+      "nightFallback": true
     }
   },
   "relightable": {
-    "approved": "images/splats/rooms/approved-neutral.spz"
-  }
+    "approved": "images/splats/rooms/approved-neutral-four-million.sog"
+  },
+  "roomPrecision": "extended",
+  "accumulationPrecision": "packed",
+  "frames": {
+    "walnut": {
+      "day": "images/splats/frames/walnut-day-detail.spz",
+      "night": "images/splats/frames/walnut-night-detail.spz",
+      "lodDay": "images/splats/frames/walnut-day-detail-lod.spz",
+      "lodNight": "images/splats/frames/walnut-night-detail-lod.spz"
+    }
+  },
+  "proxy": "images/splats/room-proxy-compact.glb",
+  "frameLodMinWorks": 12,
+  "roomSpatial": {
+    "approved": {
+      "source": "images/splats/rooms/approved-neutral-four-million.sog",
+      "metadata": "images/splats/rooms/approved-four-million-grid.json",
+      "indices": "images/splats/rooms/approved-four-million-grid.indices.gz"
+    }
+  },
+  "nativeSog": true
 }

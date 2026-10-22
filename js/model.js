@@ -2,7 +2,7 @@ import {MAX_WORKS,MAX_PEDESTALS,nextPedestalPosition,roomLayout} from './layout.
 import {ASSETS} from './assets.js';
 import {validateSurfaces} from './surfaces.js';
 export const MATERIALS = {walnut:'#543b2d', oak:'#dbc29c', black:'#252523', white:'#eae5dc', brass:'#b79a58', custom:'#75806a'};
-export const DEFAULT_FRAME = {material:'walnut',color:'#543b2d',width:3,depth:5,mat:2};
+export const DEFAULT_FRAME = {material:'walnut',color:'#543b2d',width:3,depth:5,mat:0};
 export const SLOTS = MAX_WORKS;
 export function newId() { return crypto.randomUUID(); }
 export function validateGallery(input) {
@@ -51,7 +51,7 @@ export function validateGallery(input) {
       if (typeof work.src !== 'string' || !/^(images\/[a-zA-Z0-9_./-]+|data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+)$/.test(work.src) || work.src.includes('..')) throw Error('Gebruik een afbeelding uit images/ of een geüploade JPG, PNG of WebP.');
       if (work.src.length > 12_000_000) throw Error('Deze afbeelding is te groot.');
       const f = work.frame || DEFAULT_FRAME;
-      return {id:work.id,slot:work.slot,title:cleanText(work.title,'Zonder titel'),kind:work.kind==='ceramic-photo'?'ceramic-photo':'painting',src:work.src,frame:{material:Object.hasOwn(MATERIALS,f.material)?f.material:'walnut',color:color(f.color,'#543b2d'),width:bounded(f.width,1,10,3),depth:bounded(f.depth,1,12,5),mat:bounded(f.mat,0,16,2)}};
+      return {id:work.id,slot:work.slot,title:cleanText(work.title,'Zonder titel'),kind:work.kind==='ceramic-photo'?'ceramic-photo':'painting',src:work.src,frame:{material:Object.hasOwn(MATERIALS,f.material)?f.material:'walnut',color:color(f.color,'#543b2d'),width:bounded(f.width,1,10,3),depth:bounded(f.depth,1,12,5),mat:0}};
     })};
   })};
 }

@@ -22,6 +22,12 @@ test('a new painting extends only its wall rail, and moving or deleting it remov
  const moved=conceptRails([initial[0],{id:'b',slot:2}],CONCEPT_SLOTS);assert.equal(moved.length,2);
  assert.deepEqual(conceptRails(initial,CONCEPT_SLOTS),first);assert.deepEqual(conceptRails([],CONCEPT_SLOTS),[]);
 });
+
+test('a wall cone lights its reconstructed thickness without mottled depth bands',()=>{
+ const s=source(),surface=artworkIrradiance([0,2,0],s);
+ for(const depth of [-.55,-.35,-.1,.1,.35,.55])assert.equal(artworkIrradiance([0,2,depth],s),surface);
+ assert.equal(artworkIrradiance([0,2,-1],s),0);
+});
 test('all forty works keep their own light, including on a rotated wall',()=>{
  const sources=Array.from({length:MAX_ARTWORK_SPOTS},(_,i)=>source(i*3));
  assert.equal(encodeArtworkSpots(sources).length,640);

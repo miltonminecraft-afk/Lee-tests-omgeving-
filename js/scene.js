@@ -152,15 +152,18 @@ export class GalleryScene {
   buildWork(work,texture){
     const old=this.workGroups.get(work.id);if(old){this.clickables=this.clickables.filter(o=>o!==old);this.disposeGroup(old);}
     const g=new THREE.Group(),pos=this.layout.slots[work.slot];g.position.set(...pos.slice(0,3));g.rotation.y=pos[3];g.userData.select={type:'work',id:work.id};
+    // Mount the frame back against the actual wall; depth projects into the room.
+    if(this.room?.architecture==='concept'&&this.walls?.length){const normal=new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0),g.rotation.y);this.world.updateMatrixWorld(true);const ray=new THREE.Raycaster(g.position.clone().addScaledVector(normal,.4),normal.clone().negate(),0,1.2);const wall=ray.intersectObjects(this.walls,false)[0];if(wall)g.position.copy(wall.point).addScaledVector(normal,.001);}
     const ratio=texture.image.width/texture.image.height;let h=2.15,w=h*ratio;const maxWidth=this.room?.architecture==='concept'?(work.slot>=20?.9:1.7):1.95;if(w>maxWidth){w=maxWidth;h=w/ratio;}
     g.userData.paintingSize={w,h};
-    const f=work.frame,b=f.width/100,m=f.mat/100,d=f.depth/100,ow=w+2*m,oh=h+2*m;
+    const f=work.frame,b=f.width/100,m=0,d=f.depth/100,ow=w+2*m,oh=h+2*m;
     const material=this.library.material(['walnut','oak'].includes(f.material)?'wood':'none',{color:f.material==='custom'?f.color:MATERIALS[f.material],roughness:f.material==='brass'?.26:.58,metalness:f.material==='brass'?.75:0});
-    this.box(ow+2*b,oh+2*b,.018,0,0,.012,new THREE.MeshStandardMaterial({color:'#403a31',roughness:1}),g);
-    this.box(ow,oh,.025,0,0,.032,new THREE.MeshStandardMaterial({color:'#eee9df',roughness:1}),g);
-    const plane=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:texture,roughness:.94,metalness:0}));plane.position.z=.049;g.add(plane);
-    this.box(b,oh+2*b,d,-(ow+b)/2,0,.02+d/2,material,g);this.box(b,oh+2*b,d,(ow+b)/2,0,.02+d/2,material,g);
-    this.box(ow,b,d,0,(oh+b)/2,.02+d/2,material,g);this.box(ow,b,d,0,-(oh+b)/2,.02+d/2,material,g);
+    // The backing supports the image only; it must not paint over splat borders.
+    this.box(w,h,.008,0,0,.005,new THREE.MeshStandardMaterial({color:'#403a31',roughness:1}),g);
+    const plane=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:texture,roughness:.94,metalness:0}));plane.position.z=Math.max(.01,d*.72);g.add(plane);
+    const frameParts=new THREE.Group();frameParts.userData.frameParts=true;g.add(frameParts);
+    this.box(b,oh+2*b,d,-(ow+b)/2,0,d/2,material,frameParts);this.box(b,oh+2*b,d,(ow+b)/2,0,d/2,material,frameParts);
+    this.box(ow,b,d,0,(oh+b)/2,d/2,material,frameParts);this.box(ow,b,d,0,-(oh+b)/2,d/2,material,frameParts);
     this.world.add(g);this.workGroups.set(work.id,g);this.clickables.push(g);this.buildWorkLight(work,g);
   }
   label(text){const c=document.createElement('canvas');c.width=512;c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='#524d43';ctx.font='20px Arial';ctx.fillText(text,8,40);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.userData.owned=true;return new THREE.Mesh(new THREE.PlaneGeometry(.62,.078),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));}
