@@ -1,17 +1,18 @@
 import * as THREE from 'three';
-import {GalleryScene as ConceptScene} from './concept-scene.js?v=splats-20261022';
+import {GalleryScene as ConceptScene} from './concept-scene.js?v=dynamic-spots-r1';
 import {SparkRenderer,PackedSplats,SplatMesh} from '../vendor/spark/spark.module.js';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {conceptLayout} from './concept-layout.js';
 import {conceptExit} from './concept-fixtures.js';
 import {ASSETS} from './assets.js';
+import {SplatArtworkLighting} from './splat-artwork-lighting.js';
 
 // Full downloads and GPU preparation finish behind the existing loading cover.
 // No progressive splat streaming or late appearance of furniture/trees.
 export class GalleryScene extends ConceptScene {
  constructor(container,options={}){
   super(container,{...options,splats:true});
-  this.renderer.shadowMap.enabled=false;
+  this.renderer.shadowMap.enabled=false;this.artworkLighting=new SplatArtworkLighting();
   this.spark=new SparkRenderer({renderer:this.renderer,autoUpdate:false,enableLod:false,minSortIntervalMs:this.mobile?24:0});
   this.spark.renderOrder=-10;
   Object.assign(this.spark.material,{transparent:false,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor,blendEquation:THREE.AddEquation});
@@ -44,7 +45,9 @@ export class GalleryScene extends ConceptScene {
   const requested=new URLSearchParams(location.search).get('lighting');
   const hour=new Date().getHours();this.lighting=requested==='night'||requested==='day'?requested:room.light===0||hour<7||hour>=20?'night':'day';
   const palette=room.palette||'approved',variant=this.manifest.rooms[palette]||this.manifest.rooms.approved;
-  const roomReady=this.createSplat(variant[this.lighting]).then(mesh=>{if(gen===this.generation){this.roomSplat=mesh;this.world.add(mesh);}});
+  const neutral=this.manifest.relightable?.[palette]||this.manifest.relightable?.approved;
+  this.dynamicArtworkLighting=Boolean(neutral);this.artworkLighting.setSources([]);
+  const roomReady=this.createSplat(neutral||variant[this.lighting]).then(mesh=>{if(gen===this.generation){this.roomSplat=mesh;if(neutral)this.artworkLighting.attach(mesh,this.lighting);this.world.add(mesh);}});
   const proxy=await this.proxyReady;if(gen!==this.generation)return;
   this.architecture=proxy.scene;this.world.add(this.architecture);
   if(!this.occluder){this.occluder=proxy.scene.clone(true);this.occluder.traverse(obj=>{if(!obj.isMesh)return;obj.visible=obj.userData.splat_proxy!=='glass';obj.material=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:true,side:THREE.DoubleSide});});}
@@ -79,6 +82,12 @@ export class GalleryScene extends ConceptScene {
   this.rebuildRails();const exit=conceptExit(nextRoom,previousRoom);
   if(exit){this.addPortal(exit.direction,new THREE.Vector3(-5.48,1.45,4),Math.PI/2,exit.room);await this.adjacentArt(exit.room,exit.direction,gen);}
   this.loadingRoom=false;this.enteringRoom=false;this.world.updateMatrixWorld(true);
+ }
+ rebuildRails(){
+  super.rebuildRails();
+  this.railGroup.traverse(obj=>{if(obj.isMesh)obj.renderOrder=1;});
+  for(const group of this.workGroups.values())group.traverse(obj=>{if(obj.isMesh)obj.renderOrder=1;});
+  if(this.dynamicArtworkLighting){const ids=new Set(this.room.works.map(work=>work.id));for(const id of this.lightTargets.keys())if(!ids.has(id))this.lightTargets.delete(id);this.artworkLighting.setSources([...this.lightTargets.values()]);}
  }
  buildWork(work,texture){
   super.buildWork(work,texture);

@@ -1,5 +1,5 @@
 {
-  "revision": "preview-1792675129",
+  "revision": "preview-1792677034",
   "rooms": {
     "approved": {
       "day": "images/splats/rooms/approved-day.spz",
@@ -29,5 +29,8 @@
       "depth": 4.817679405212402,
       "night": "images/splats/objects/island_tree_01-night.spz"
     }
+  },
+  "relightable": {
+    "approved": "images/splats/rooms/approved-neutral.spz"
   }
 }

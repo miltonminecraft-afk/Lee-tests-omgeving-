@@ -9,7 +9,8 @@ test('public splat library contains valid compressed room and independent object
  const library=JSON.parse(await fs.readFile(new URL('content/splats.json',root),'utf8'));
  const gallery=validateGallery(JSON.parse(await fs.readFile(new URL('content/gallery.json',root),'utf8')));
  for(const palette of ['approved','ivory','greige'])for(const mode of ['day','night'])assert.ok(library.rooms[palette][mode]);
- const paths=new Set(Object.values(library.rooms).flatMap(v=>[v.day,v.night]));
+ assert.ok(library.relightable.approved);
+ const paths=new Set([...Object.values(library.relightable),...Object.values(library.rooms).flatMap(v=>[v.day,v.night])]);
  for(const room of gallery.rooms)for(const object of [...room.trees,...room.furniture,...room.plants]){
   const entry=library.assets[object.asset];assert.ok(entry,object.asset);assert.ok(entry.nativeHeight>0);
   paths.add(entry.day);paths.add(entry.night);

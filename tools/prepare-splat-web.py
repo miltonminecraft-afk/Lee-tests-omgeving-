@@ -40,5 +40,8 @@ for asset_id in selected:
   bounds=metadata['bounds'];item['width']=bounds['max'][0]-bounds['min'][0];item['depth']=bounds['max'][1]-bounds['min'][1]
  copy(ROOT/metadata['license'],f'objects/{asset_id}-LICENSE.txt')
  manifest['assets'][asset_id]=item
+for palette in ('approved','ivory','greige'):
+ neutral=ROOT/'.local/splat-training-relightable'/palette/(palette+'.spz')
+ if neutral.exists():manifest.setdefault('relightable',{})[palette]=copy(neutral,f'rooms/{palette}-neutral.spz')
 (ROOT/'content/splats.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print('SPLAT_LIBRARY_PREPARED',manifest['revision'],len(manifest['rooms']),len(manifest['assets']))

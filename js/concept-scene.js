@@ -3,7 +3,7 @@ import {GalleryScene as BaseScene} from './scene.js?v=splats-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {conceptLayout,conceptFloor,alcoveLocal} from './concept-layout.js';
 import {createGallerySky,createVisitorWeather} from './sky.js';
-import {conceptRails,conceptExit,conceptDoorCrossing} from './concept-fixtures.js';
+import {conceptRails,conceptSpotMount,conceptExit,conceptDoorCrossing} from './concept-fixtures.js?v=dynamic-spots-r1';
 import {viewingDistances} from './viewing.js';
 import {surfaceFor} from './surfaces.js';
 
@@ -95,20 +95,22 @@ export class GalleryScene extends BaseScene {
  }
  buildWorkLight(work,group){
   const normal=new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0),group.rotation.y);
-  const mount=group.position.clone().addScaledVector(normal,1.3);mount.y=4.18;
+  const mount=new THREE.Vector3(...conceptSpotMount(work,this.room.works,this.layout.slots));
+  if(group.userData.fixture){group.userData.fixture.traverse(obj=>{if(obj.isSprite)obj.material.dispose();});this.disposeGroup(group.userData.fixture);}
+  const fixture=new THREE.Group();group.userData.fixture=fixture;group.add(fixture);
   const aim=group.position.clone().add(new THREE.Vector3(0,.18,0)),back=mount.clone().add(new THREE.Vector3(0,-.17,0)),dir=aim.clone().sub(back).normalize();
   group.updateWorldMatrix(true,false);const local=v=>group.worldToLocal(v.clone());
   const rail=local(mount);
-  this.box(.095,.04,.05,rail.x,rail.y-.025,rail.z,this.materials.dark,group);
-  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.13,20),this.materials.dark);stem.position.copy(local(mount.clone().add(new THREE.Vector3(0,-.105,0))));group.add(stem);
+  this.box(.095,.04,.05,rail.x,rail.y-.025,rail.z,this.materials.dark,fixture);
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.13,20),this.materials.dark);stem.position.copy(local(mount.clone().add(new THREE.Vector3(0,-.105,0))));fixture.add(stem);
   const localDir=local(back.clone().add(dir)).sub(local(back)).normalize();
-  const swivel=new THREE.Mesh(new THREE.SphereGeometry(.024,16,12),this.materials.dark);swivel.position.copy(local(back));group.add(swivel);
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.19,32),this.materials.dark);body.position.copy(local(back.clone().addScaledVector(dir,.095)));body.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),localDir);group.add(body);
+  const swivel=new THREE.Mesh(new THREE.SphereGeometry(.024,16,12),this.materials.dark);swivel.position.copy(local(back));fixture.add(swivel);
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.19,32),this.materials.dark);body.position.copy(local(back.clone().addScaledVector(dir,.095)));body.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),localDir);fixture.add(body);
   const lensPos=back.clone().addScaledVector(dir,.187);
-  const lens=new THREE.Mesh(new THREE.CircleGeometry(.036,32),new THREE.MeshStandardMaterial({color:'#fff0d8',emissive:'#ffcc88',emissiveIntensity:4,roughness:.2}));lens.position.copy(local(lensPos));lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),localDir);group.add(lens);
+  const lens=new THREE.Mesh(new THREE.CircleGeometry(.036,32),new THREE.MeshStandardMaterial({color:'#fff0d8',emissive:'#ffcc88',emissiveIntensity:4,roughness:.2}));lens.position.copy(local(lensPos));lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),localDir);fixture.add(lens);
   if(!this.spotHaloTexture){const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const ctx=canvas.getContext('2d'),gradient=ctx.createRadialGradient(32,32,1,32,32,32);gradient.addColorStop(0,'rgba(255,230,184,.8)');gradient.addColorStop(.25,'rgba(255,215,155,.18)');gradient.addColorStop(1,'rgba(255,210,150,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);this.spotHaloTexture=new THREE.CanvasTexture(canvas);this.spotHaloTexture.colorSpace=THREE.SRGBColorSpace;}
-  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:this.spotHaloTexture,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.3}));halo.position.copy(local(lensPos.clone().addScaledVector(dir,.008)));halo.scale.set(.13,.13,1);group.add(halo);
-  const target={position:back.clone().addScaledVector(dir,.198),target:aim,angle:.65};
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:this.spotHaloTexture,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.3}));halo.position.copy(local(lensPos.clone().addScaledVector(dir,.008)));halo.scale.set(.13,.13,1);fixture.add(halo);
+  const target={position:back.clone().addScaledVector(dir,.198),target:aim,normal:normal.clone(),angle:.65};
   const {w,h}=group.userData.paintingSize;let half=0;
   for(const sx of [-1,1])for(const sy of [-1,1]){const v=group.localToWorld(new THREE.Vector3(sx*(w/2+.06),sy*(h/2+.06),0));half=Math.max(half,dir.angleTo(v.sub(target.position).normalize()));}
   target.angle=Math.min(Math.PI/4,half+.08);this.lightTargets.set(work.id,target);
@@ -119,6 +121,7 @@ export class GalleryScene extends BaseScene {
    const a=new THREE.Vector3(...rail.a),b=new THREE.Vector3(...rail.b),centre=a.clone().add(b).multiplyScalar(.5);
    const mesh=this.box(a.distanceTo(b),.028,.035,centre.x,centre.y,centre.z,this.materials.dark,this.railGroup);mesh.rotation.y=rail.rotation;
   }
+  for(const work of this.room.works){const group=this.workGroups.get(work.id);if(group)this.buildWorkLight(work,group);}
  }
  updateWork(work){super.updateWork(work);this.rebuildRails();}
  updateSpotlights(){
