@@ -14,20 +14,20 @@ import {OutputPass} from '../vendor/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from '../vendor/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from '../vendor/addons/geometries/RoundedBoxGeometry.js';
 export class GalleryScene {
-  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onInspect=()=>{},localMaterials=false}={}) {
-    this.container=container;this.onSelect=onSelect;this.onPortal=onPortal;this.onError=onError;this.layout=roomLayout();
+  constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onInspect=()=>{},localMaterials=false,visitor=false,onFatal=onError,mobile=matchMedia('(pointer:coarse)').matches}={}) {
+    this.visitor=visitor;this.mobile=mobile;this.onFatal=onFatal;this.presenting=false;this.contextLost=false;this.container=container;this.onSelect=onSelect;this.onPortal=onPortal;this.onError=onError;this.layout=roomLayout();
     this.onInspect=onInspect;this.inspected=null;this.viewDirection=new THREE.Vector3();
-    this.renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio,matchMedia('(pointer:coarse)').matches?1.3:1.7));
+    this.renderer=new THREE.WebGLRenderer({antialias:!this.mobile,preserveDrawingBuffer:!visitor});
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio,this.mobile?1.3:1.7));
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;
     container.append(this.renderer.domElement);this.renderer.domElement.setAttribute('aria-label','Interactieve galerij');this.renderer.domElement.tabIndex=0;
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#e5e3dc');
     const environment=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(environment,.035);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.38;environment.dispose();pmrem.dispose();
     this.camera=new THREE.PerspectiveCamera(50,1,.08,120);this.controls={target:new THREE.Vector3(),enabled:true,update:()=>{}};this.navigation=new WalkNavigation(this);
-    this.composer=new EffectComposer(this.renderer);this.composer.addPass(new RenderPass(this.scene,this.camera));this.ao=new SSAOPass(this.scene,this.camera,512,512,24);this.ao.kernelRadius=.55;this.ao.minDistance=.002;this.ao.maxDistance=.12;this.composer.addPass(this.ao);this.composer.addPass(new OutputPass());
+    this.composer=new EffectComposer(this.renderer);this.composer.addPass(new RenderPass(this.scene,this.camera));this.ao=new SSAOPass(this.scene,this.camera,512,512,24);this.ao.kernelRadius=.55;this.ao.minDistance=.002;this.ao.maxDistance=.12;this.ao.enabled=!this.mobile;this.composer.addPass(this.ao);this.composer.addPass(new OutputPass());
     this.raycaster=new THREE.Raycaster();this.clickables=[];this.workGroups=new Map();this.texCache=new Map();this.generation=0;
-    this.composer.renderTarget1.samples=4;this.composer.renderTarget2.samples=4;
+    this.composer.renderTarget1.samples=this.mobile?0:4;this.composer.renderTarget2.samples=this.mobile?0:4;
     this.library=new MaterialLibrary(this.renderer);this.materials={stone:this.library.material('stone',{color:'#ffffff',roughness:.48}),wood:this.library.material('wood',{color:'#c5ad8c',roughness:.5}),dark:new THREE.MeshStandardMaterial({color:'#252622',roughness:.48,metalness:.35})};
     this.materialReady=localMaterials?Promise.resolve():this.library.setQuality('1k').then(()=>this.library.setQuality(matchMedia('(pointer:coarse)').matches?'2k':'4k')).catch(e=>this.onError(e.message));
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(container);
@@ -39,16 +39,25 @@ export class GalleryScene {
       const hit=this.raycaster.intersectObjects(this.clickables,true)[0];
       if(hit){let obj=hit.object;while(obj&&!obj.userData.select&&!obj.userData.portal)obj=obj.parent;if(obj?.userData.portal){if(!this.enteringRoom)this.onPortal(obj.userData.portal===-1?-1:1);}else if(obj?.userData.select)this.onSelect(obj.userData.select);}else if(this.floor){const h=this.raycaster.intersectObject(this.floor,true)[0];if(h)this.navigation.walkTo(h.point);}
     });
-    this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.onError('De grafische kaart is onderbroken. Herlaad met een lagere textuurkwaliteit.');});
+    this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.contextLost=true;this.presenting=false;this.onFatal(Error('De 3D-weergave is onderbroken.'));});
     this.overview(false);this.resize();
     this.renderer.setAnimationLoop(()=>{
-      if(document.hidden||!this.container.clientHeight)return;
+      if(document.hidden||!this.container.clientHeight||this.contextLost||(this.visitor&&!this.presenting))return;
       if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/1100),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(t===1)this.transition=null;}
       this.navigation.update();if(this.room?.architecture!=='concept'){this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,-7.6,7.6);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,-8.05,this.layout.front-.4);}this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);
       if(this.checkPortal)this.checkPortal();else if(this.nextRoom&&this.camera.position.z< -7.5&&!this.enteringRoom){this.enteringRoom=true;this.onPortal(1);}
       this.tickEnvironment?.(performance.now()/1000);
-      this.camera.lookAt(this.controls.target);this.updateInspection();this.updateSpotlights();this.composer.render();
+      this.camera.lookAt(this.controls.target);this.updateInspection();this.updateSpotlights();try{this.composer.render();}catch(error){this.presenting=false;this.onFatal(error);}
     });
+  }
+  async prepareFrame(){
+    if(this.contextLost||this.renderer.getContext().isContextLost())throw Error('De 3D-weergave is onderbroken.');
+    this.camera.lookAt(this.controls.target);this.updateSpotlights();this.scene.updateMatrixWorld(true);
+    await this.renderer.compileAsync(this.scene,this.camera);
+    this.composer.render();
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+    if(this.contextLost||this.renderer.getContext().isContextLost())throw Error('De 3D-weergave is onderbroken.');
+    this.presenting=true;
   }
   resize(){const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;this.renderer.setSize(w,h);this.composer.setSize(w,h);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
   async setQuality(level){await this.materialReady;await this.library.setQuality(level);}
@@ -186,13 +195,14 @@ export class GalleryScene {
     const g=new THREE.Group();g.userData.select={type:asset.type,id:p.id};this.assetGroups.set(p.id,g);this.world.add(g);this.clickables.push(g);
     g.position.set(p.x,0,p.z);g.rotation.y=(p.rotation||0)*Math.PI/180;
     try{
-      const model=await new GLTFLoader().loadAsync(new URL('../'+asset.url,import.meta.url).href);
+      const url=this.visitor&&p.asset==='concept_bench'?asset.url.replace('bench.glb',this.mobile?'bench-mobile.glb':'bench-web.glb'):asset.url;
+      const model=await new GLTFLoader().loadAsync(new URL('../'+url,import.meta.url).href);
       model.scene.traverse(o=>{if(o.isMesh){o.castShadow=o.receiveShadow=true;for(const m of Array.isArray(o.material)?o.material:[o.material]){for(const t of Object.values(m))if(t?.isTexture){t.userData.owned=true;t.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());}if(p.asset==='mid_century_lounge_chair')m.color.multiply(new THREE.Color(1,.937,.874));}}});
       if(gen!==this.generation||this.assetGroups.get(p.id)!==g){this.disposeGroup(model.scene);return;}
       const bounds=new THREE.Box3().setFromObject(model.scene),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
       if(!(size.y>0))throw Error('Leeg model');
       model.scene.position.set(-center.x,-bounds.min.y,-center.z);g.add(model.scene);g.userData.nativeHeight=size.y;this.updateAsset(p);
-    }catch(e){if(gen===this.generation)this.onError(asset.title+' kon niet laden.');}
+    }catch(e){if(gen===this.generation){if(this.visitor)throw Error(asset.title+' kon niet laden.',{cause:e});this.onError(asset.title+' kon niet laden.');}}
   }
   updateAsset(p){const g=this.assetGroups.get(p.id);if(!g)return;g.position.set(p.x,p.y||0,p.z);g.rotation.y=(p.rotation||0)*Math.PI/180;if(g.userData.nativeHeight)g.scale.setScalar(p.height/g.userData.nativeHeight);}
   removeAsset(id){const g=this.assetGroups.get(id);this.clickables=this.clickables.filter(o=>o!==g);this.disposeGroup(g);this.assetGroups.delete(id);}

@@ -9,87 +9,9 @@
       "accent": "#88917c",
       "wall": "#f5efe5",
       "light": 1,
-      "pedestals": [
-        {
-          "id": "portraits-plinth-1",
-          "title": "Sokkel 1",
-          "x": 2.92046,
-          "z": -8.04035,
-          "height": 1.0399999618530273,
-          "width": 0.6600000262260437,
-          "shape": "square",
-          "color": "#d5c5ac",
-          "model": null,
-          "modelName": "3D-kunstwerk",
-          "modelHeight": 0.65,
-          "rotation": 0
-        },
-        {
-          "id": "portraits-plinth-2",
-          "title": "Sokkel 2",
-          "x": 4.21743,
-          "z": -7.98694,
-          "height": 0.7300000190734863,
-          "width": 0.6600000262260437,
-          "shape": "square",
-          "color": "#d5c5ac",
-          "model": null,
-          "modelName": "3D-kunstwerk",
-          "modelHeight": 0.65,
-          "rotation": 0
-        }
-      ],
-      "plants": [
-        {
-          "id": "portraits-concept-6",
-          "asset": "potted_plant_01",
-          "x": 3.65533,
-          "y": 0,
-          "z": -3.8469,
-          "height": 1.35016,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "portraits-concept-7",
-          "asset": "potted_plant_02",
-          "x": 1.25392,
-          "y": 0.00005,
-          "z": -5.59162,
-          "height": 0.84118,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "portraits-concept-8",
-          "asset": "potted_plant_04",
-          "x": -4.05,
-          "y": 0.00038,
-          "z": -5.94157,
-          "height": 0.26746,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "portraits-concept-9",
-          "asset": "hanging_ivy",
-          "x": 5.31956,
-          "y": 2.40596,
-          "z": -9.49454,
-          "height": 1.23139,
-          "rotation": 342,
-          "color": "#a77257"
-        }
-      ],
+      "pedestals": [],
+      "plants": [],
       "furniture": [
-        {
-          "id": "portraits-concept-0",
-          "asset": "modern_coffee_table_01",
-          "x": -4.24975,
-          "z": -3.99998,
-          "height": 0.39,
-          "rotation": 86
-        },
         {
           "id": "portraits-concept-1",
           "asset": "concept_bench",
@@ -97,42 +19,9 @@
           "z": -2.8,
           "height": 0.48,
           "rotation": 33
-        },
-        {
-          "id": "portraits-concept-5",
-          "asset": "mid_century_lounge_chair",
-          "x": 2.63797,
-          "z": -2.35423,
-          "height": 1.16908,
-          "rotation": 325
         }
       ],
-      "trees": [
-        {
-          "id": "portraits-concept-2",
-          "asset": "island_tree_01",
-          "x": -17.71079,
-          "z": -4.40192,
-          "height": 14,
-          "rotation": 335
-        },
-        {
-          "id": "portraits-concept-3",
-          "asset": "island_tree_02",
-          "x": -0.18605,
-          "z": -17.76815,
-          "height": 17,
-          "rotation": 20
-        },
-        {
-          "id": "portraits-concept-4",
-          "asset": "jacaranda_tree",
-          "x": 18.47849,
-          "z": -19.52846,
-          "height": 17,
-          "rotation": 70
-        }
-      ],
+      "trees": [],
       "works": [
         {
           "id": "kunst2",
@@ -256,87 +145,9 @@
       "accent": "#b78b7a",
       "wall": "#f5efe5",
       "light": 1,
-      "pedestals": [
-        {
-          "id": "ceramics-plinth-1",
-          "title": "Sokkel 1",
-          "x": 2.92046,
-          "z": -8.04035,
-          "height": 1.0399999618530273,
-          "width": 0.6600000262260437,
-          "shape": "square",
-          "color": "#d5c5ac",
-          "model": null,
-          "modelName": "3D-kunstwerk",
-          "modelHeight": 0.65,
-          "rotation": 0
-        },
-        {
-          "id": "ceramics-plinth-2",
-          "title": "Sokkel 2",
-          "x": 4.21743,
-          "z": -7.98694,
-          "height": 0.7300000190734863,
-          "width": 0.6600000262260437,
-          "shape": "square",
-          "color": "#d5c5ac",
-          "model": null,
-          "modelName": "3D-kunstwerk",
-          "modelHeight": 0.65,
-          "rotation": 0
-        }
-      ],
-      "plants": [
-        {
-          "id": "ceramics-concept-6",
-          "asset": "potted_plant_01",
-          "x": 3.65533,
-          "y": 0,
-          "z": -3.8469,
-          "height": 1.35016,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "ceramics-concept-7",
-          "asset": "potted_plant_02",
-          "x": 1.25392,
-          "y": 0.00005,
-          "z": -5.59162,
-          "height": 0.84118,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "ceramics-concept-8",
-          "asset": "potted_plant_04",
-          "x": -4.05,
-          "y": 0.00038,
-          "z": -5.94157,
-          "height": 0.26746,
-          "rotation": 0,
-          "color": "#a77257"
-        },
-        {
-          "id": "ceramics-concept-9",
-          "asset": "hanging_ivy",
-          "x": 5.31956,
-          "y": 2.40596,
-          "z": -9.49454,
-          "height": 1.23139,
-          "rotation": 342,
-          "color": "#a77257"
-        }
-      ],
+      "pedestals": [],
+      "plants": [],
       "furniture": [
-        {
-          "id": "ceramics-concept-0",
-          "asset": "modern_coffee_table_01",
-          "x": -4.24975,
-          "z": -3.99998,
-          "height": 0.39,
-          "rotation": 86
-        },
         {
           "id": "ceramics-concept-1",
           "asset": "concept_bench",
@@ -344,42 +155,9 @@
           "z": -2.8,
           "height": 0.48,
           "rotation": 33
-        },
-        {
-          "id": "ceramics-concept-5",
-          "asset": "mid_century_lounge_chair",
-          "x": 2.63797,
-          "z": -2.35423,
-          "height": 1.16908,
-          "rotation": 325
         }
       ],
-      "trees": [
-        {
-          "id": "ceramics-concept-2",
-          "asset": "island_tree_01",
-          "x": -17.71079,
-          "z": -4.40192,
-          "height": 14,
-          "rotation": 335
-        },
-        {
-          "id": "ceramics-concept-3",
-          "asset": "island_tree_02",
-          "x": -0.18605,
-          "z": -17.76815,
-          "height": 17,
-          "rotation": 20
-        },
-        {
-          "id": "ceramics-concept-4",
-          "asset": "jacaranda_tree",
-          "x": 18.47849,
-          "z": -19.52846,
-          "height": 17,
-          "rotation": 70
-        }
-      ],
+      "trees": [],
       "works": [
         {
           "id": "kunst1",

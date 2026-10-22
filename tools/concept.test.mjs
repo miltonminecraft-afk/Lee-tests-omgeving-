@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import {validateGallery,addRoom,addWork,addPedestal,setPedestalCount} from '../js/model.js';
 import {roomNeighbours,conceptLayout,conceptFloor} from '../js/concept-layout.js';
 import {orderedWorks} from '../js/layout.js';
-const data=JSON.parse(await fs.readFile(new URL('../content/gallery.json',import.meta.url),'utf8'));
+const data=JSON.parse(await fs.readFile(new URL('./fixtures/gallery-concept.json',import.meta.url),'utf8'));
 test('physical room doors are reversible and do not wrap at the ends',()=>{
  const rooms=[{id:'one'},{id:'two'},{id:'three'}];
  assert.equal(roomNeighbours(rooms,0).previous,null);assert.equal(roomNeighbours(rooms,2).next,null);

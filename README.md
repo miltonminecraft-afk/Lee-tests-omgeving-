@@ -1,12 +1,14 @@
 # Lee Mobero — digitale galerij
 
-## Huidige versie: Blender-ruimte en materiaalbeheer
+## Huidige versie: mobiele laadreparatie
 
-De website gebruikt nu de geëxporteerde Blender-ruimte (`images/models/gallery-concept/room.glb`) met afzonderlijk bewerkbare kunstwerken, sokkels, meubels, planten en bomen. De beheerbibliotheek bevat acht Poly Haven-salontafels en 869 materiaalopties. Negen materiaalsets staan lokaal klaar; overige sets worden op aanvraag via de beheerserver gedownload. De materiaalkeuze ondersteunt 2K/4K/8K-kleurtextures, 2K-normal/roughnessmaps, patroonschaal en reliëfsterkte. De oorspronkelijke ruimtematerialen zijn op 2K gebakken.
+De bezoekerssite toont de Blender-ruimte met het houten conceptbankje en de originele kunstafbeeldingen. Andere objecten blijven beschikbaar in de beheerbibliotheek. Weer-, licht- en materiaalknoppen staan niet op de bezoekerssite.
 
-GitHub Pages publiceert uitsluitend de bezoekerssite en de daar gebruikte modellen/materialen. De volledige assetbibliotheek en beheercode staan wel in deze repository. Loginbestanden, privéconcepten en grote Blender-werkbestanden blijven lokaal. Live weer op bezoekerslocatie en materiaaldownloads vereisen de Node-server; GitHub Pages ondersteunt deze serverfuncties niet. Dag/nacht, handmatige weerskeuze en daglicht werken wel op de statische site.
+De ruimte en het bankje hebben afzonderlijke browserbestanden. Mobiel gebruikt 1K-textures (samen circa 12 MB), desktop 2K; alle geometrie blijft ongewijzigd. De oorspronkelijke GLB- en Blender-bronnen blijven behouden. `python tools/optimize-gallery-glb.py` maakt de afgeleide GLB-bestanden met Pillow. Dit is een tijdelijke mesh-optimalisatie, nog geen Gaussian-splatconversie.
 
-De onderstaande ontwerpnotities beschrijven deels het eerdere prototype; de actuele Blender-ruimte heeft een vaste geometrie, twaalf actieve kunstspots en realtime PBR-verlichting. Dit is geen Gaussian-splat- of path-tracingrenderer.
+Tijdens het laden blijft de hele weergave afgedekt, totdat modellen, kunstafbeeldingen en het eerste frame gereed zijn. Bij download-, decodeer- of WebGL-fouten verschijnt een herlaadknop. Op mobiel zijn SSAO en multisample-renderbuffers uitgeschakeld, de zonneschaduw is 2K en maximaal vier kunstspots zijn actief. `?render=mobile` maakt dezelfde renderroute op desktop controleerbaar; dat vervangt geen test op een echte telefoon.
+
+GitHub Pages publiceert uitsluitend de bezoekerssite en gebruikte bestanden. Beheer, privéconcepten, loginbestanden en Blender-bronnen worden niet meegepubliceerd. De bibliotheek bevat acht Poly Haven-salontafels en 869 materiaalopties; importeren vereist de lokale Node-beheerserver.
 
 Een uitbreidbare 3D-galerij met de 11 originele afbeeldingen uit [Leemobero/Leemobero](https://github.com/Leemobero/Leemobero), aanpasbare lijsten en een afzonderlijke beheerapplicatie. Het ontwerp is een nieuwe uitwerking; de huidige leemobero.com is niet gewijzigd.
 

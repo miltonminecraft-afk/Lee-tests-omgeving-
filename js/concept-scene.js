@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {GalleryScene as BaseScene} from './scene.js';
+import {GalleryScene as BaseScene} from './scene.js?v=mobile-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {conceptLayout,conceptFloor,alcoveLocal} from './concept-layout.js';
 import {createGallerySky,createVisitorWeather} from './sky.js';
@@ -19,13 +19,14 @@ export class GalleryScene extends BaseScene {
   window.addEventListener('pagehide',()=>{this.weather.stop();this.rainVideo.pause();});
  }
  async loadRoom(room,nextRoom=null,{previousRoom=null}={}){
-  const gen=++this.generation;this.loadingRoom=true;this.navigation.path=[];
+  const gen=++this.generation;this.loadingRoom=true;this.presenting=false;this.navigation.path=[];
   for(const [surface,material]of this.surfaceOverrides||[]){for(const target of this.surfaceObjects.get(surface)||[])target.mesh.material=target.original;for(const value of Object.values(material))if(value?.isTexture)value.dispose();material.dispose();}
   this.disposeGroup(this.world);this.world=new THREE.Group();this.scene.add(this.world);
   this.room=room;this.nextRoom=nextRoom;this.previousRoom=previousRoom;this.layout=conceptLayout(room);
   this.workGroups.clear();this.pedestalGroups=new Map();this.assetGroups=new Map();this.lightTargets=new Map();this.clickables=[];this.glows=[];this.walls=[];this.surfaceObjects=new Map();this.surfaceOverrides=new Map();this.surfaceRevisions=new Map();
   this.onInspect(null);this.inspected=null;
-  const loaded=await new GLTFLoader().loadAsync(new URL('../images/models/gallery-concept/room.glb',import.meta.url).href);
+  for(const [url,texture]of this.texCache)if(!room.works.some(work=>work.src===url)){texture.dispose();this.texCache.delete(url);}
+  const loaded=await new GLTFLoader().loadAsync(new URL('../images/models/gallery-concept/'+(this.visitor?(this.mobile?'room-mobile.glb':'room-web.glb'):'room.glb'),import.meta.url).href);
   if(gen!==this.generation){this.disposeGroup(loaded.scene);return;}
   this.world.add(loaded.scene);this.architecture=loaded.scene;
   this.floor=new THREE.Group();this.world.add(this.floor);
@@ -48,10 +49,10 @@ export class GalleryScene extends BaseScene {
    const target=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({visible:false}));target.rotation.x=-Math.PI/2;target.position.set(x,.01,z);this.floor.add(target);
   }
   const sky=new THREE.HemisphereLight('#fff4df','#8c7659',.65),sun=new THREE.DirectionalLight('#fff0d8',2.2),bounce=new THREE.HemisphereLight('#ddd5c4','#40372b',.1);
-  sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-17,right:17,top:22,bottom:-22,near:.1,far:65});sun.shadow.normalBias=.015;sun.shadow.bias=-.00002;
+  sun.castShadow=true;sun.shadow.mapSize.set(this.mobile?2048:4096,this.mobile?2048:4096);Object.assign(sun.shadow.camera,{left:-17,right:17,top:22,bottom:-22,near:.1,far:65});sun.shadow.normalBias=.015;sun.shadow.bias=-.00002;
   this.world.add(sky,sun,sun.target,bounce);this.daylight={sky,sun,bounce};this.setDaylight(this.daylightValue??room.light);
-  this.spotlights=Array.from({length:12},()=>{const l=new THREE.SpotLight('#ffe4ba',0,9,.5,.3,2);l.castShadow=false;this.world.add(l,l.target);return l;});
-  const loadWorks=room.works.map(async work=>{try{let texture=this.texCache.get(work.src);if(!texture){texture=await new THREE.TextureLoader().loadAsync(work.src);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=8;this.texCache.set(work.src,texture);}if(gen===this.generation)this.buildWork(work,texture);}catch{this.onError('Afbeelding niet geladen: '+work.title);}});
+  this.spotlights=Array.from({length:this.mobile?4:12},()=>{const l=new THREE.SpotLight('#ffe4ba',0,9,.5,.3,2);l.castShadow=false;this.world.add(l,l.target);return l;});
+  const loadWorks=room.works.map(async work=>{try{let texture=this.texCache.get(work.src);if(!texture){texture=await new THREE.TextureLoader().loadAsync(work.src);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=8;this.texCache.set(work.src,texture);}if(gen===this.generation)this.buildWork(work,texture);}catch(error){if(this.visitor)throw Error('Afbeelding niet geladen: '+work.title,{cause:error});this.onError('Afbeelding niet geladen: '+work.title);}});
   await Promise.all([...loadWorks,...[...(room.plants||[]),...(room.furniture||[]),...(room.trees||[])].map(p=>this.buildAsset(p,gen)),...room.pedestals.map(p=>this.buildPedestal(p,gen))]);
   if(gen!==this.generation)return;
   this.addPortal(1,new THREE.Vector3(2.729,1.5,-6.578),-.314,nextRoom);
@@ -73,7 +74,7 @@ export class GalleryScene extends BaseScene {
     const ratio=t.image.width/t.image.height,plane=new THREE.Mesh(new THREE.PlaneGeometry(1.45,1.45/ratio),new THREE.MeshStandardMaterial({map:t,roughness:.9}));
     plane.position.set(...slots[i].slice(0,3));plane.rotation.y=slots[i][3];this.world.add(plane);
     const light=new THREE.PointLight('#ffe8c9',6,6,2);light.position.copy(plane.position).add(new THREE.Vector3(0,1,1.4));this.world.add(light);
-   }catch{this.onError('Een werk in de aangrenzende zaal kon niet laden.');}
+   }catch(error){if(this.visitor)throw error;this.onError('Een werk in de aangrenzende zaal kon niet laden.');}
   }
  }
  checkPortal(){

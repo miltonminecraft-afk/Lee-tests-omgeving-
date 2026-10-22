@@ -13,6 +13,7 @@ for(const name of ['index.html','images','js','styles','vendor','content'])await
  const relative=path.relative(root,source).replaceAll('\\','/'),parts=relative.split('/');
  if(relative.endsWith('.before-concept.json')||relative.endsWith('.download'))return false;
  if(parts[0]==='images'&&parts[1]==='studio')return false;
+ if(relative==='images/models/gallery-concept/room.glb'||relative==='images/models/concept_bench/bench.glb')return false;
  if(parts[0]==='images'&&parts[1]==='models'&&parts[2]&&!models.has(parts[2]))return false;
  if(parts[0]==='images'&&parts[1]==='material-library'&&parts[2]&&!materials.has(parts[2]))return false;
  if(relative==='images/models/jacaranda_tree/jacaranda_tree.bin'||/^images\/models\/gallery-concept\/material-/.test(relative))return false;

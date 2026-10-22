@@ -1,0 +1,429 @@
+{
+  "version": 1,
+  "rooms": [
+    {
+      "id": "portraits",
+      "architecture": "concept",
+      "capacity": 24,
+      "title": "Kleur & identiteit",
+      "accent": "#88917c",
+      "wall": "#f5efe5",
+      "light": 1,
+      "pedestals": [
+        {
+          "id": "portraits-plinth-1",
+          "title": "Sokkel 1",
+          "x": 2.92046,
+          "z": -8.04035,
+          "height": 1.0399999618530273,
+          "width": 0.6600000262260437,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "portraits-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.21743,
+          "z": -7.98694,
+          "height": 0.7300000190734863,
+          "width": 0.6600000262260437,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        }
+      ],
+      "plants": [
+        {
+          "id": "portraits-concept-6",
+          "asset": "potted_plant_01",
+          "x": 3.65533,
+          "y": 0,
+          "z": -3.8469,
+          "height": 1.35016,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "portraits-concept-7",
+          "asset": "potted_plant_02",
+          "x": 1.25392,
+          "y": 0.00005,
+          "z": -5.59162,
+          "height": 0.84118,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "portraits-concept-8",
+          "asset": "potted_plant_04",
+          "x": -4.05,
+          "y": 0.00038,
+          "z": -5.94157,
+          "height": 0.26746,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "portraits-concept-9",
+          "asset": "hanging_ivy",
+          "x": 5.31956,
+          "y": 2.40596,
+          "z": -9.49454,
+          "height": 1.23139,
+          "rotation": 342,
+          "color": "#a77257"
+        }
+      ],
+      "furniture": [
+        {
+          "id": "portraits-concept-0",
+          "asset": "modern_coffee_table_01",
+          "x": -4.24975,
+          "z": -3.99998,
+          "height": 0.39,
+          "rotation": 86
+        },
+        {
+          "id": "portraits-concept-1",
+          "asset": "concept_bench",
+          "x": -3,
+          "z": -2.8,
+          "height": 0.48,
+          "rotation": 33
+        },
+        {
+          "id": "portraits-concept-5",
+          "asset": "mid_century_lounge_chair",
+          "x": 2.63797,
+          "z": -2.35423,
+          "height": 1.16908,
+          "rotation": 325
+        }
+      ],
+      "trees": [
+        {
+          "id": "portraits-concept-2",
+          "asset": "island_tree_01",
+          "x": -17.71079,
+          "z": -4.40192,
+          "height": 14,
+          "rotation": 335
+        },
+        {
+          "id": "portraits-concept-3",
+          "asset": "island_tree_02",
+          "x": -0.18605,
+          "z": -17.76815,
+          "height": 17,
+          "rotation": 20
+        },
+        {
+          "id": "portraits-concept-4",
+          "asset": "jacaranda_tree",
+          "x": 18.47849,
+          "z": -19.52846,
+          "height": 17,
+          "rotation": 70
+        }
+      ],
+      "works": [
+        {
+          "id": "kunst2",
+          "slot": 0,
+          "title": "Portret met rood masker",
+          "kind": "painting",
+          "src": "images/slides/kunst2.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst5",
+          "slot": 1,
+          "title": "Portret met bloemenmasker",
+          "kind": "painting",
+          "src": "images/slides/kunst5.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst7",
+          "slot": 2,
+          "title": "Portret op rood",
+          "kind": "painting",
+          "src": "images/slides/kunst7.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst10",
+          "slot": 3,
+          "title": "Portret met blauwe bloemen",
+          "kind": "painting",
+          "src": "images/slides/kunst10.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst3",
+          "slot": 4,
+          "title": "Portret op licht doek",
+          "kind": "painting",
+          "src": "images/slides/kunst3.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst4",
+          "slot": 5,
+          "title": "Portret met groene bril",
+          "kind": "painting",
+          "src": "images/slides/kunst4.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst6",
+          "slot": 6,
+          "title": "Portret met leliemasker",
+          "kind": "painting",
+          "src": "images/slides/kunst6.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst9",
+          "slot": 7,
+          "title": "Portret in groen en rood",
+          "kind": "painting",
+          "src": "images/slides/kunst9.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "ceramics",
+      "architecture": "concept",
+      "capacity": 24,
+      "title": "Vorm & verbeelding",
+      "accent": "#b78b7a",
+      "wall": "#f5efe5",
+      "light": 1,
+      "pedestals": [
+        {
+          "id": "ceramics-plinth-1",
+          "title": "Sokkel 1",
+          "x": 2.92046,
+          "z": -8.04035,
+          "height": 1.0399999618530273,
+          "width": 0.6600000262260437,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        },
+        {
+          "id": "ceramics-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.21743,
+          "z": -7.98694,
+          "height": 0.7300000190734863,
+          "width": 0.6600000262260437,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelName": "3D-kunstwerk",
+          "modelHeight": 0.65,
+          "rotation": 0
+        }
+      ],
+      "plants": [
+        {
+          "id": "ceramics-concept-6",
+          "asset": "potted_plant_01",
+          "x": 3.65533,
+          "y": 0,
+          "z": -3.8469,
+          "height": 1.35016,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "ceramics-concept-7",
+          "asset": "potted_plant_02",
+          "x": 1.25392,
+          "y": 0.00005,
+          "z": -5.59162,
+          "height": 0.84118,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "ceramics-concept-8",
+          "asset": "potted_plant_04",
+          "x": -4.05,
+          "y": 0.00038,
+          "z": -5.94157,
+          "height": 0.26746,
+          "rotation": 0,
+          "color": "#a77257"
+        },
+        {
+          "id": "ceramics-concept-9",
+          "asset": "hanging_ivy",
+          "x": 5.31956,
+          "y": 2.40596,
+          "z": -9.49454,
+          "height": 1.23139,
+          "rotation": 342,
+          "color": "#a77257"
+        }
+      ],
+      "furniture": [
+        {
+          "id": "ceramics-concept-0",
+          "asset": "modern_coffee_table_01",
+          "x": -4.24975,
+          "z": -3.99998,
+          "height": 0.39,
+          "rotation": 86
+        },
+        {
+          "id": "ceramics-concept-1",
+          "asset": "concept_bench",
+          "x": -3,
+          "z": -2.8,
+          "height": 0.48,
+          "rotation": 33
+        },
+        {
+          "id": "ceramics-concept-5",
+          "asset": "mid_century_lounge_chair",
+          "x": 2.63797,
+          "z": -2.35423,
+          "height": 1.16908,
+          "rotation": 325
+        }
+      ],
+      "trees": [
+        {
+          "id": "ceramics-concept-2",
+          "asset": "island_tree_01",
+          "x": -17.71079,
+          "z": -4.40192,
+          "height": 14,
+          "rotation": 335
+        },
+        {
+          "id": "ceramics-concept-3",
+          "asset": "island_tree_02",
+          "x": -0.18605,
+          "z": -17.76815,
+          "height": 17,
+          "rotation": 20
+        },
+        {
+          "id": "ceramics-concept-4",
+          "asset": "jacaranda_tree",
+          "x": 18.47849,
+          "z": -19.52846,
+          "height": 17,
+          "rotation": 70
+        }
+      ],
+      "works": [
+        {
+          "id": "kunst1",
+          "slot": 0,
+          "title": "Schoenvaas met rozen",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst1.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst8",
+          "slot": 1,
+          "title": "Sandaal met sculpturale hak",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst8.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        },
+        {
+          "id": "kunst11",
+          "slot": 2,
+          "title": "Laars met geschilderd portret",
+          "kind": "ceramic-photo",
+          "src": "images/slides/kunst11.jpg",
+          "frame": {
+            "material": "walnut",
+            "color": "#543b2d",
+            "width": 3,
+            "depth": 5,
+            "mat": 2
+          }
+        }
+      ]
+    }
+  ]
+}
