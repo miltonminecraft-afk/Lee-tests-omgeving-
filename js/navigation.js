@@ -1,11 +1,13 @@
+import {TouchNavigation} from './touch-navigation.js';
 import * as THREE from 'three';
 import {isFreeFloor} from './layout.js';
 export class WalkNavigation {
-  constructor(view){this.view=view;this.keys=new Set();this.path=[];this.last=performance.now();this.target=view.controls.target;const canvas=view.renderer.domElement;let pointer;
-    canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY,id:e.pointerId};canvas.setPointerCapture(e.pointerId);});
-    canvas.addEventListener('pointermove',e=>{if(document.pointerLockElement===canvas){this.look(e.movementX,e.movementY);return;}if(!pointer||e.pointerId!==pointer.id)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer.x=e.clientX;pointer.y=e.clientY;this.look(dx,dy);});
-    canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
-    canvas.addEventListener('wheel',e=>{e.preventDefault();view.transition=null;this.step(-Math.sign(e.deltaY)*.25,0);},{passive:false});
+  constructor(view){this.view=view;this.keys=new Set();this.path=[];this.last=performance.now();this.target=view.controls.target;const canvas=view.renderer.domElement;this.touch=new TouchNavigation();
+    canvas.addEventListener('pointerdown',e=>{this.touch.down(e.pointerId,e.clientX,e.clientY);canvas.setPointerCapture(e.pointerId);});
+    canvas.addEventListener('pointermove',e=>{if(document.pointerLockElement===canvas){this.look(e.movementX,e.movementY);return;}const movement=this.touch.move(e.pointerId,e.clientX,e.clientY);if(!movement)return;if('zoom'in movement){view.transition=null;this.path=[];this.dolly(movement.zoom);}else this.look(movement.dx,movement.dy);});
+    canvas.addEventListener('pointerup',e=>this.touch.up(e.pointerId,performance.now()));canvas.addEventListener('pointercancel',e=>this.touch.up(e.pointerId,performance.now()));
+    canvas.addEventListener('lostpointercapture',e=>{if(this.touch.pointers.has(e.pointerId))this.touch.up(e.pointerId,performance.now());});
+    canvas.addEventListener('wheel',e=>{e.preventDefault();view.transition=null;this.dolly(-Math.sign(e.deltaY)*.25);},{passive:false});
     window.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||e.target.isContentEditable||document.querySelector('dialog[open]'))return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)){e.preventDefault();this.keys.add(e.code);view.transition=null;this.path=[];}});
     window.addEventListener('keyup',e=>this.keys.delete(e.code));window.addEventListener('blur',()=>this.keys.clear());
     document.addEventListener('visibilitychange',()=>this.keys.clear());document.addEventListener('pointerlockchange',()=>{document.body.classList.toggle('pointer-locked',document.pointerLockElement===canvas);this.keys.clear();});
@@ -13,6 +15,7 @@ export class WalkNavigation {
   look(dx,dy){if(!dx&&!dy)return;const v=this.view;v.transition=null;this.path=[];const d=v.camera.getWorldDirection(new THREE.Vector3());const yaw=Math.atan2(-d.x,-d.z)-dx*.003;const pitch=THREE.MathUtils.clamp(Math.asin(d.y)-dy*.003,-1.2,1.2);d.set(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));this.target.copy(v.camera.position).add(d);v.camera.lookAt(this.target);}
   valid(x,z){return this.view.isFreeFloor?this.view.isFreeFloor(x,z):isFreeFloor(this.view.room||{},x,z);}
   step(forward,side){const camera=this.view.camera;const dir=camera.getWorldDirection(new THREE.Vector3());dir.y=0;dir.normalize();const right=new THREE.Vector3().crossVectors(dir,new THREE.Vector3(0,1,0));const delta=dir.multiplyScalar(forward).addScaledVector(right,side),before=camera.position.clone();if(this.valid(camera.position.x+delta.x,camera.position.z))camera.position.x+=delta.x;if(this.valid(camera.position.x,camera.position.z+delta.z))camera.position.z+=delta.z;camera.position.y=THREE.MathUtils.lerp(camera.position.y,1.7,.1);this.target.add(camera.position.clone().sub(before));}
+  dolly(distance){const count=Math.max(1,Math.ceil(Math.abs(distance)/.08));for(let i=0;i<count;i++)this.step(distance/count,0);}
   update(){const now=performance.now(),dt=Math.min(.04,(now-this.last)/1000);this.last=now;const f=(this.keys.has('KeyW')||this.keys.has('ArrowUp')?1:0)-(this.keys.has('KeyS')||this.keys.has('ArrowDown')?1:0),s=(this.keys.has('KeyD')||this.keys.has('ArrowRight')?1:0)-(this.keys.has('KeyA')||this.keys.has('ArrowLeft')?1:0);if(f||s){const norm=Math.hypot(f,s);this.step(f/norm*dt*2,s/norm*dt*2);}else if(this.path.length){const camera=this.view.camera,next=this.path[0],d=new THREE.Vector3(next.x-camera.position.x,0,next.z-camera.position.z);if(d.length()<.07)this.path.shift();else{d.multiplyScalar(Math.min(dt*1.9,d.length())/d.length());if(this.valid(camera.position.x+d.x,camera.position.z+d.z)){camera.position.add(d);this.target.add(d);const dy=(1.7-camera.position.y)*.12;camera.position.y+=dy;this.target.y+=dy;}else this.path=[];}}}
   walkTo(point){
     const v=this.view;v.transition=null;if(!this.valid(point.x,point.z))return false;

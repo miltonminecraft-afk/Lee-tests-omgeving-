@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import {GalleryScene as BaseScene} from './scene.js?v=mobile-20261022';
+import {GalleryScene as BaseScene} from './scene.js?v=doors-touch-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {conceptLayout,conceptFloor,alcoveLocal} from './concept-layout.js';
 import {createGallerySky,createVisitorWeather} from './sky.js';
+import {conceptRails,conceptExit,conceptDoorCrossing} from './concept-fixtures.js';
 import {viewingDistances} from './viewing.js';
 import {surfaceFor} from './surfaces.js';
 
@@ -55,10 +56,9 @@ export class GalleryScene extends BaseScene {
   const loadWorks=room.works.map(async work=>{try{let texture=this.texCache.get(work.src);if(!texture){texture=await new THREE.TextureLoader().loadAsync(work.src);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=8;this.texCache.set(work.src,texture);}if(gen===this.generation)this.buildWork(work,texture);}catch(error){if(this.visitor)throw Error('Afbeelding niet geladen: '+work.title,{cause:error});this.onError('Afbeelding niet geladen: '+work.title);}});
   await Promise.all([...loadWorks,...[...(room.plants||[]),...(room.furniture||[]),...(room.trees||[])].map(p=>this.buildAsset(p,gen)),...room.pedestals.map(p=>this.buildPedestal(p,gen))]);
   if(gen!==this.generation)return;
-  this.addPortal(1,new THREE.Vector3(2.729,1.5,-6.578),-.314,nextRoom);
-  this.addPortal(-1,new THREE.Vector3(-5.48,1.45,4),Math.PI/2,previousRoom);
-  if(!previousRoom){const wall=this.box(.28,3.1,1.6,-5.5,1.55,4,new THREE.MeshStandardMaterial({color:'#d3c6ae',roughness:.94}));this.walls.push(wall);}
-  await Promise.all([this.adjacentArt(nextRoom,1,gen),this.adjacentArt(previousRoom,-1,gen)]);
+  this.rebuildRails();
+  const exit=conceptExit(nextRoom,previousRoom);
+  if(exit){this.addPortal(exit.direction,new THREE.Vector3(-5.48,1.45,4),Math.PI/2,exit.room);await this.adjacentArt(exit.room,exit.direction,gen);}
   if(gen===this.generation){this.loadingRoom=false;this.enteringRoom=false;this.world.updateMatrixWorld(true);}
  }
  addPortal(direction,position,rotation,room){
@@ -67,7 +67,7 @@ export class GalleryScene extends BaseScene {
  }
  async adjacentArt(room,direction,gen){
   if(!room)return;
-  const slots=direction>0?[[3.1,2,-12.9,-.314],[5.2,2,-13.6,-.314]]:[[-8.1,2,1.67,0],[-10.38,2,4,Math.PI/2]];
+  const slots=[[-8.1,2,1.67,0],[-10.38,2,4,Math.PI/2]];
   for(const [i,w]of room.works.slice(0,2).entries()){
    try{const t=await new THREE.TextureLoader().loadAsync(w.src);t.colorSpace=THREE.SRGBColorSpace;t.userData.owned=true;
     if(gen!==this.generation){t.dispose();return;}
@@ -79,14 +79,13 @@ export class GalleryScene extends BaseScene {
  }
  checkPortal(){
   if(this.loadingRoom||this.enteringRoom||!this.room)return;
-  const p=this.camera.position,q=alcoveLocal(p.x,p.z);
-  const direction=this.nextRoom&&q.y>13.8&&q.x>1.8&&q.x<4?1:this.previousRoom&&p.x<-5.7&&p.z>3.25&&p.z<4.75?-1:0;
+  const p=this.camera.position;
+  const direction=conceptDoorCrossing(p.x,p.z,this.nextRoom,this.previousRoom);
   if(direction){this.enteringRoom=true;this.onPortal(direction);}
  }
  enterFromDoor(direction=1){
   this.enteringRoom=false;
-  if(direction>0)this.move(new THREE.Vector3(-4.7,1.7,4),new THREE.Vector3(-1,1.7,3),false);
-  else this.move(new THREE.Vector3(2.6,1.7,-5.8),new THREE.Vector3(1,1.7,-2.5),false);
+  this.move(new THREE.Vector3(-4.7,1.7,4),new THREE.Vector3(-1,1.7,3),false);
  }
  isFreeFloor(x,z){
   if(!this.room||this.loadingRoom||!conceptFloor(this.room,x,z))return false;
@@ -99,7 +98,7 @@ export class GalleryScene extends BaseScene {
   const mount=group.position.clone().addScaledVector(normal,1.3);mount.y=4.18;
   const aim=group.position.clone().add(new THREE.Vector3(0,.18,0)),back=mount.clone().add(new THREE.Vector3(0,-.17,0)),dir=aim.clone().sub(back).normalize();
   group.updateWorldMatrix(true,false);const local=v=>group.worldToLocal(v.clone());
-  const rail=local(mount);this.box(1.85,.028,.035,rail.x,rail.y,rail.z,this.materials.dark,group);
+  const rail=local(mount);
   this.box(.095,.04,.05,rail.x,rail.y-.025,rail.z,this.materials.dark,group);
   const stem=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.13,20),this.materials.dark);stem.position.copy(local(mount.clone().add(new THREE.Vector3(0,-.105,0))));group.add(stem);
   const localDir=local(back.clone().add(dir)).sub(local(back)).normalize();
@@ -114,6 +113,14 @@ export class GalleryScene extends BaseScene {
   for(const sx of [-1,1])for(const sy of [-1,1]){const v=group.localToWorld(new THREE.Vector3(sx*(w/2+.06),sy*(h/2+.06),0));half=Math.max(half,dir.angleTo(v.sub(target.position).normalize()));}
   target.angle=Math.min(Math.PI/4,half+.08);this.lightTargets.set(work.id,target);
  }
+ rebuildRails(){
+  this.disposeGroup(this.railGroup);this.railGroup=new THREE.Group();this.world.add(this.railGroup);
+  for(const rail of conceptRails(this.room.works,this.layout.slots)){
+   const a=new THREE.Vector3(...rail.a),b=new THREE.Vector3(...rail.b),centre=a.clone().add(b).multiplyScalar(.5);
+   const mesh=this.box(a.distanceTo(b),.028,.035,centre.x,centre.y,centre.z,this.materials.dark,this.railGroup);mesh.rotation.y=rail.rotation;
+  }
+ }
+ updateWork(work){super.updateWork(work);this.rebuildRails();}
  updateSpotlights(){
   if(!this.spotlights)return;const sources=[...this.lightTargets.values()].sort((a,b)=>a.target.distanceToSquared(this.camera.position)-b.target.distanceToSquared(this.camera.position));
   this.spotlights.forEach((light,i)=>{const s=sources[i];light.intensity=s?18:0;if(s){light.position.copy(s.position);light.target.position.copy(s.target);light.angle=s.angle;light.penumbra=.35;}});

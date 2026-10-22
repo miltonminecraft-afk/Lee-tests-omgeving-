@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {WalkNavigation} from './navigation.js';
+import {WalkNavigation} from './navigation.js?v=doors-touch-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {MATERIALS} from './model.js';
 import {ASSETS} from './assets.js';
@@ -34,7 +34,7 @@ export class GalleryScene {
     let start;
     this.renderer.domElement.addEventListener('pointerdown',e=>{start={x:e.clientX,y:e.clientY};});
     this.renderer.domElement.addEventListener('pointerup',e=>{
-      if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)>6)return;
+      if(performance.now()<this.navigation.touch.suppressTapUntil||!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)>6)return;
       const r=this.renderer.domElement.getBoundingClientRect();this.raycaster.setFromCamera(document.pointerLockElement===this.renderer.domElement?new THREE.Vector2():new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),this.camera);
       const hit=this.raycaster.intersectObjects(this.clickables,true)[0];
       if(hit){let obj=hit.object;while(obj&&!obj.userData.select&&!obj.userData.portal)obj=obj.parent;if(obj?.userData.portal){if(!this.enteringRoom)this.onPortal(obj.userData.portal===-1?-1:1);}else if(obj?.userData.select)this.onSelect(obj.userData.select);}else if(this.floor){const h=this.raycaster.intersectObject(this.floor,true)[0];if(h)this.navigation.walkTo(h.point);}
