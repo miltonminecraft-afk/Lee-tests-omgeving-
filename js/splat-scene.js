@@ -13,6 +13,7 @@ import {releaseUploadedSplatCpuBuffers} from './splat-memory.js';
 import {createSplatRanges,readSplatGridIndices} from './splat-spatial.js';
 import {validateSplatCells} from './splat-spatial-data.js';
 import {NativeSogSource} from './splat-native-sog.js';
+import {displayedSplats,visibleSplatsReady} from './splat-view-readiness.js';
 
 // Full downloads and GPU preparation finish behind the existing loading cover.
 // No progressive splat streaming or late appearance of furniture/trees.
@@ -25,6 +26,7 @@ export class GalleryScene extends ConceptScene {
   Object.assign(this.spark.material,{transparent:false,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor,blendEquation:THREE.AddEquation});
   this.scene.add(this.spark);this.splatData=new Map();this.spatialData=new Map();this.frameLibrary=new SplatFrameLibrary();
   this.frameCullEntries=[];this.assetCullEntries=[];this.splatFrustum=new THREE.Frustum();this.splatCullMatrix=new THREE.Matrix4();this.splatCullBox=new THREE.Box3();
+  this.visibleSplatFrustum=new THREE.Frustum();this.visibilityPreparation=null;this.visibilityWaitFrames=0;this.displayedSplats=new WeakMap();
   // Render outside trees behind a solid depth mask, then the room splats.
   // This prevents transparent splat edges from showing leaves through walls.
   this.exteriorScene=new THREE.Scene();this.exteriorScene.add(this.sky.mesh);
@@ -209,16 +211,43 @@ export class GalleryScene extends ConceptScene {
   this.updateAsset(p);
  }
  renderScene(){
-  if(this.loadingRoom)return;
+  if(this.loadingRoom)return false;
   this.updateSplatVisibility();
   this.artworkLighting.prepare(this.renderer);
+  if(!this.splatViewReady()){
+   // Keep the last complete canvas during an abrupt turn/zoom. All source data
+   // is already resident; wait only for the new visible set to finish sorting.
+   this.visibilityWaitFrames++;
+   if(!this.visibilityPreparation){
+    const generation=this.generation;this.scene.updateMatrixWorld(true);this.exteriorScene.updateMatrixWorld(true);this.syncObjectCamera();
+    const preparation=Promise.all([
+     this.spark.update({scene:this.scene,camera:this.camera}),
+     this.objectSpark.update({scene:this.scene,camera:this.objectCamera}),
+     this.exteriorSpark.update({scene:this.exteriorScene,camera:this.camera})
+    ]).catch(error=>{if(generation===this.generation){this.presenting=false;this.onFatal(error);}}).finally(()=>{if(this.visibilityPreparation===preparation)this.visibilityPreparation=null;});
+    this.visibilityPreparation=preparation;
+   }
+   return false;
+  }
   this.renderer.autoClear=true;this.renderer.render(this.exteriorScene,this.camera);
   this.renderer.autoClear=false;this.renderer.clearDepth();this.renderer.render(this.scene,this.camera);
   this.syncObjectCamera();this.renderer.render(this.scene,this.objectCamera);this.renderer.autoClear=true;
+  return true;
  }
  syncObjectCamera(){this.objectCamera.copy(this.camera,false);this.objectCamera.layers.set(1);this.objectCamera.updateMatrixWorld();}
+ splatViewReady(){
+  this.splatCullMatrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);
+  this.visibleSplatFrustum.setFromProjectionMatrix(this.splatCullMatrix);
+  const displayed=renderer=>displayedSplats(renderer,this.displayedSplats);
+  const room=displayed(this.spark),objects=displayed(this.objectSpark),outside=displayed(this.exteriorSpark);
+  const ready=(entries,shown)=>visibleSplatsReady(entries,shown,this.visibleSplatFrustum,this.splatCullBox);
+  if(this.roomPartitions&&!ready(this.roomPartitions.entries,room))return false;
+  if(!ready(this.frameCullEntries,objects))return false;
+  return this.assetCullEntries.every(entry=>ready([entry],entry.group.parent===this.exteriorWorld?outside:objects));
+ }
  async prepareFrame(){
   if(this.contextLost||this.renderer.getContext().isContextLost())throw Error('De 3D-weergave is onderbroken.');
+  const generation=this.generation;
   this.camera.lookAt(this.controls.target);this.updateSpotlights();this.scene.updateMatrixWorld(true);
   this.updateSplatVisibility();
   this.artworkLighting.prepare(this.renderer);
@@ -227,7 +256,16 @@ export class GalleryScene extends ConceptScene {
   await this.spark.update({scene:this.scene,camera:this.camera});
   this.syncObjectCamera();await this.objectSpark.update({scene:this.scene,camera:this.objectCamera});
   if(!this.spark.activeSplats)throw Error('De splatruimte kon niet worden voorbereid.');
-  await this.renderer.compileAsync(this.exteriorScene,this.camera);await this.renderer.compileAsync(this.scene,this.camera);await this.renderer.compileAsync(this.scene,this.objectCamera);this.renderScene();
+  await this.renderer.compileAsync(this.exteriorScene,this.camera);await this.renderer.compileAsync(this.scene,this.camera);await this.renderer.compileAsync(this.scene,this.objectCamera);
+  // A renderer reused between rooms can still be sorting its previous mapping.
+  // Keep the loading cover until the new room and every visible object are ready.
+  while(!this.splatViewReady()){
+   if(generation!==this.generation)return;
+   if(this.contextLost)throw Error('De 3D-weergave is onderbroken.');
+   await new Promise(resolve=>requestAnimationFrame(resolve));
+   await Promise.all([this.spark.update({scene:this.scene,camera:this.camera}),this.objectSpark.update({scene:this.scene,camera:this.objectCamera}),this.exteriorSpark.update({scene:this.exteriorScene,camera:this.camera})]);
+  }
+  this.renderScene();
   // Immutable sources remain complete on the GPU. Artwork/object transforms
   // and lighting use those textures; retain CPU data only for LOD hierarchies.
   for(const pending of this.splatData.values())this.releaseSourceCpu(await pending);
