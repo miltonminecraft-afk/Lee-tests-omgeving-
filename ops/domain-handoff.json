@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-10-23T18:37:41.525079+00:00",
+  "updated_at": "2026-10-23T18:45:47.3220842Z",
   "task": "Behoud de gepubliceerde Lee Mobero-galerij op leemobero.com en werk verder op basis van de nieuwe opdracht van de gebruiker.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
   "public_branch": "main",
   "release_branch": "release/gallery-update",
   "current_public_site": "https://leemobero.com/",
-  "verified_gallery_commit": "e8826859d0d2ea4d18a87f270c939345d2641943",
-  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/40001487791",
-  "status": "Nieuwe release succesvol gepubliceerd. Browsercontrole: GitHub Pages-adres verwijst door naar https://leemobero.com/; bijgewerkte scripts, volledige zaal en volgende/vorige zaal gecontroleerd. Deze optimalisatietaak heeft geen DNS-instellingen gewijzigd.",
+  "verified_gallery_commit": "b30a5f965e7a51348a90108454a078104cfe474c",
+  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/40005587050",
+  "status": "De gecorrigeerde doorkijk is gepubliceerd op https://leemobero.com/. Live module, volledige eerste zaal, volgende zaal en terugkeer gecontroleerd. 23 lokale tests geslaagd; GitHub Pages build en deployment succesvol. Geen nieuwe training gestart.",
   "dns_provider": "Cloudflare",
   "registrar_reported_by_user": "TransIP",
   "nameservers": [
