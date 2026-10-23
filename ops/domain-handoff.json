@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-10-23T11:22:09.911786+00:00",
+  "updated_at": "2026-10-23T13:41:43.025546+00:00",
   "task": "Koppel de bestaande geoptimaliseerde Lee Mobero-galerij aan leemobero.com en controleer HTTPS en de 3D-weergave.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
   "public_branch": "main",
   "release_branch": "release/gallery-update",
   "current_public_site": "https://miltonminecraft-afk.github.io/Lee-tests-omgeving-/",
-  "verified_gallery_commit": "a6602f56dcee3d60b4d79466f6579f8a7ee9c82b",
-  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/39925939391",
+  "verified_gallery_commit": "ab51032bcc2713b88b29472589998ca151cc08d7",
+  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/39962654846",
   "status": "Galerij gepubliceerd en visueel gecontroleerd. Domeinkoppeling nog niet gewijzigd; wacht op ingelogde Cloudflare-sessie op de MacBook.",
   "dns_provider": "Cloudflare",
   "registrar_reported_by_user": "TransIP",
@@ -28,7 +28,7 @@
     "Controleer de actuele Cloudflare-zone leemobero.com, bestaande DNS-records, redirects en hosting. Bewaar de huidige relevante instellingen lokaal als herstelmogelijkheid.",
     "Koppel leemobero.com als custom domain aan GitHub Pages van miltonminecraft-afk/Lee-tests-omgeving- voordat DNS wordt omgezet. Doe dit pas wanneer ook de Cloudflare-kant kan worden afgerond, omdat het huidige preview-adres kan gaan doorverwijzen.",
     "Configureer alleen noodzakelijke website-records voor het hoofddomein en eventueel www. Behoud e-mailrecords en overige diensten. Verifieer actuele GitHub Pages DNS-instructies.",
-    "Controleer certificaat/HTTPS, redirects, content/splats.json, volledige 3D-load, het koffietafeltje langs de linkerwand, en volgende/vorige zaal. Rapporteer pas live nadat het gewenste domein echt de galerij toont."
+    "Controleer HTTPS en redirects, openingsbeeld bij dag/nacht, volledige 3D-load en rustige camera-overgang, bankje 1.5 tegel naar rechts met gelijke rotatie, sokkels in de nis, koffietafel langs de linkerwand en volgende/vorige zaal. Rapporteer pas live nadat leemobero.com deze galerij toont."
   ],
   "dns_reference": {
     "github_pages_apex_A": [
@@ -48,6 +48,24 @@
     "Lokale browseraanmeldingen en Windows-bestanden gaan niet mee in deze overdracht. Alle benodigde gepubliceerde sitebestanden staan wel in deze repository.",
     "De algemene kwaliteitswensen voor muren/vloeren zijn nog niet allemaal opgelost. Deze taak is de domeinkoppeling, geen claim dat alle kwaliteitswerk klaar is."
   ],
-  "mac_prompt": "Open https://github.com/miltonminecraft-afk/Lee-tests-omgeving- en lees ops/domain-handoff.json. Maak de koppeling naar leemobero.com af via mijn Cloudflare en GitHub. Behoud de huidige galerij en controleer dat HTTPS en de 3D-omgeving op het domein werken.",
-  "gallery_update": "Actuele main bevat een direct openingsbeeld met dag/nacht-varianten, vernieuwd bij editorpublicatie, geleidelijke camera-overgang, twee verplaatsbare sokkels per nis en bank 1.5 tegel naar rechts (rotatie 33 graden behouden). Gebruik altijd actuele main; oudere verified_gallery_commit is de vorige gecontroleerde basis."
+  "mac_prompt": "Lees in GitHub-repository miltonminecraft-afk/Lee-tests-omgeving- op main het bestand ops/domain-handoff.json. Neem de actuele galerij en daarin vastgelegde wijzigingen over. Maak daarna via mijn ingelogde Cloudflare en GitHub de koppeling naar leemobero.com af, behoud de huidige inrichting en controleer HTTPS, openingsbeeld en complete 3D-zaal. Start geen achtergrondtraining.",
+  "gallery_update": "Actuele main bevat het gecontroleerde openingsbeeld, bankje en sokkels. De commit hierboven is de gecontroleerde websiteversie; latere overdrachtscommits wijzigen alleen instructies.",
+  "completed_changes": [
+    "Bankje in beide zalen 1,5 vloertegel naar rechts: x -3 naar -0.825 (+2.175 meter). Z -2.8 en rotatie 33 graden behouden.",
+    "Twee afzonderlijk verplaatsbare/verwijderbare sokkels per sokkelruimte: 1.04 en 0.73 meter hoog, 0.66 meter breed; posities volgen het goedgekeurde Blenderontwerp.",
+    "Bij openen direct een klein WebP-beeld van het eerste geplaatste schilderij. Pas na volledige 3D-load vervaagt het beeld en beweegt de camera in 4.2 seconden rustig naar het overzicht. Autoplay start 10 seconden na laden.",
+    "Aparte dag- en nachtbeelden; dezelfde lichtstand als de 3D-zaal. Bij Publiceer in de lokale editor worden beide beelden opnieuw opgenomen met de publieke renderer. Een inhoudssignatuur voorkomt gebruik van een verouderd beeld na wijzigingen.",
+    "Geen beheerknoppen op de publieke website. Beheerserver en opnamepagina blijven achter authenticatie; opname-iframe uitsluitend dezelfde origin.",
+    "11 lokale tests geslaagd; GitHub Pages-build en publicatie geslaagd; live openingsbeeld en geladen zaal met bankje/sokkels gecontroleerd zonder browserfouten."
+  ],
+  "important_limits": [
+    "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",
+    "Publiceer in de lokale editor schrijft content/gallery.json, content/opening.json en de bijbehorende images/opening/*.webp. De online Pages-site verandert pas na commit/push en deployment van deze bestanden.",
+    "Volledige .blend-bronnen, GPU-trainingsdata en lokale browseraanmeldingen zijn geen onderdeel van deze overdracht. Niet beweren dat deze op de Mac beschikbaar zijn.",
+    "Cloudflare-domeinkoppeling is nog niet uitgevoerd. Controleer bestaande records en huidige live-site voordat iets wijzigt."
+  ],
+  "validation_commands": [
+    "node --test tools/gallery.test.mjs tools/opening-poster.test.mjs",
+    "node tools/build-public.mjs"
+  ]
 }
