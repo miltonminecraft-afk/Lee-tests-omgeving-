@@ -9,13 +9,40 @@
       "accent": "#88917c",
       "wall": "#f5efe5",
       "light": 1,
-      "pedestals": [],
+      "pedestals": [
+        {
+          "id": "portraits-alcove-plinth-1",
+          "title": "Sokkel 1",
+          "x": 2.9205,
+          "z": -8.0403,
+          "height": 1.04,
+          "width": 0.66,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelHeight": 0.65,
+          "rotation": 18
+        },
+        {
+          "id": "portraits-alcove-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.2174,
+          "z": -7.9869,
+          "height": 0.73,
+          "width": 0.66,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelHeight": 0.65,
+          "rotation": 18
+        }
+      ],
       "plants": [],
       "furniture": [
         {
           "id": "portraits-concept-1",
           "asset": "concept_bench",
-          "x": -3,
+          "x": -0.825,
           "z": -2.8,
           "height": 0.48,
           "rotation": 33
@@ -162,13 +189,40 @@
       "accent": "#b78b7a",
       "wall": "#f5efe5",
       "light": 1,
-      "pedestals": [],
+      "pedestals": [
+        {
+          "id": "ceramics-alcove-plinth-1",
+          "title": "Sokkel 1",
+          "x": 2.9205,
+          "z": -8.0403,
+          "height": 1.04,
+          "width": 0.66,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelHeight": 0.65,
+          "rotation": 18
+        },
+        {
+          "id": "ceramics-alcove-plinth-2",
+          "title": "Sokkel 2",
+          "x": 4.2174,
+          "z": -7.9869,
+          "height": 0.73,
+          "width": 0.66,
+          "shape": "square",
+          "color": "#d5c5ac",
+          "model": null,
+          "modelHeight": 0.65,
+          "rotation": 18
+        }
+      ],
       "plants": [],
       "furniture": [
         {
           "id": "ceramics-concept-1",
           "asset": "concept_bench",
-          "x": -3,
+          "x": -0.825,
           "z": -2.8,
           "height": 0.48,
           "rotation": 33

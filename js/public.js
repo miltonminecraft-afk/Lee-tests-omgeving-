@@ -1,24 +1,28 @@
+import {revealOpening} from './opening-view.js';
 import {loadCompleteRoom} from './room-loading.js';
 import {validateGallery} from './model.js';
 import {orderedWorks} from './layout.js';
 import {roomNeighbours} from './concept-layout.js';
-const $=id=>document.getElementById(id);let gallery,scene,roomIndex=0,selected=-1,playing=true,timer,roomRequest=0,inspecting=null,roomLoading=false;
+const $=id=>document.getElementById(id);let gallery,scene,roomIndex=0,selected=-1,playing=true,timer,roomRequest=0,inspecting=null,roomLoading=false,openingPending=true;
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;setTimeout(()=>$('toast').hidden=true,7000);}
 function arm(delay=5000){clearTimeout(timer);if(playing&&!roomLoading)timer=setTimeout(async()=>{if(!document.hidden&&!$('experience').hidden&&!document.querySelector('dialog[open]'))await advance().catch(e=>toast(e.message));arm();},delay);}
 function playback(value,delay=5000){playing=value;if(value){showWorkInfo(null);const work=orderedWorks(gallery.rooms[roomIndex])[selected];if(work)scene?.focus(work);}$('autoplay').textContent=value?'Ⅱ':'▶';$('autoplay').setAttribute('aria-pressed',String(value));$('autoplay').setAttribute('aria-label',value?'Automatisch doorlopen pauzeren':'Automatisch doorlopen starten');arm(delay);}
 function selectWork(work,close=false){selected=orderedWorks(gallery.rooms[roomIndex]).indexOf(work);showWorkInfo(null);scene?.focus(work,{close});document.querySelectorAll('.thumb').forEach(b=>b.classList.toggle('active',b.dataset.id===work.id));}
 function loadingState(busy){roomLoading=busy;$('experience').setAttribute('aria-busy',String(busy));for(const element of document.querySelectorAll('.scene-tools button,.room-switch select,.thumb,#nextWork'))element.disabled=busy;if(!busy){$('nextWork').disabled=!gallery.rooms[roomIndex].works.length;$('nextRoom').disabled=roomIndex>=gallery.rooms.length-1;$('previousRoom').hidden=roomIndex===0;$('previousRoom').disabled=roomIndex===0;}}
-function loadFailed(error){console.error(error);clearTimeout(timer);loadingState(true);$('loading').hidden=false;$('loading').replaceChildren();const message=document.createElement('p');message.textContent='De galerij kon niet worden geladen.';const retry=document.createElement('button');retry.textContent='Opnieuw proberen';retry.onclick=()=>location.reload();$('loading').append(message,retry);}
+function loadFailed(error){$('openingPoster').hidden=true;$('loading').classList.remove('opening-loading');console.error(error);clearTimeout(timer);loadingState(true);$('loading').hidden=false;$('loading').replaceChildren();const message=document.createElement('p');message.textContent='De galerij kon niet worden geladen.';const retry=document.createElement('button');retry.textContent='Opnieuw proberen';retry.onclick=()=>location.reload();$('loading').append(message,retry);}
 async function showRoom(index){
  if(roomLoading||!scene)return false;
+ const opening=openingPending&&index===0;openingPending=false;
  const request=++roomRequest;clearTimeout(timer);loadingState(true);roomIndex=index;selected=-1;
  const r=gallery.rooms[index];$('roomSelect').value=r.id;$('thumbnails').replaceChildren();
  for(const work of orderedWorks(r)){const b=document.createElement('button');b.className='thumb';b.dataset.id=work.id;b.title=work.title;b.disabled=true;b.setAttribute('aria-label',`Bekijk ${work.title}`);const img=new Image();img.src=work.src;img.alt=work.title;b.append(img);b.onclick=()=>{playback(false);selectWork(work);};$('thumbnails').append(b);}
  $('loading').hidden=false;
  return loadCompleteRoom({
   load:()=>scene.loadRoom(r,roomNeighbours(gallery.rooms,index).next,{previousRoom:roomNeighbours(gallery.rooms,index).previous}),
-  prepare:async()=>{scene.overview(false);await scene.prepareFrame();},
-  reveal:()=>{if(request!==roomRequest)return;loadingState(false);$('loading').hidden=true;arm();},
+  prepare:async()=>{if(opening&&!$('openingPoster').hidden)scene.openingView();else scene.overview(false);await scene.prepareFrame();},
+  reveal:async()=>{if(request!==roomRequest)return;$('experience').setAttribute('aria-busy','false');$('loading').hidden=true;
+   if(opening)await revealOpening({poster:$('openingPoster'),scene,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});
+   $('loading').classList.remove('opening-loading');loadingState(false);arm(opening?10000:5000);},
   fail:loadFailed
  });
 }

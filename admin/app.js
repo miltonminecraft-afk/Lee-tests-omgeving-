@@ -1,3 +1,4 @@
+import {captureOpeningPosters} from './opening-poster.js';
 import {renderMaterials} from '/admin/materials.js';
 import {conceptFloor} from '/js/concept-layout.js';
 import {roomLayout} from '/js/layout.js';
@@ -45,7 +46,7 @@ function renderEditor(){
     area.append(section('De lijst'));const swatches=document.createElement('div');swatches.className='swatches';const names={walnut:'Walnoot',oak:'Eiken',black:'Zwart',white:'Gebroken wit',brass:'Messing',custom:'Eigen kleur'};
     for(const [key,color] of Object.entries(MATERIALS)){const b=document.createElement('button');b.className='swatch'+(w.frame.material===key?' active':'');b.setAttribute('aria-label',`Lijst ${names[key]}`);const dot=document.createElement('i');dot.style.background=color;b.append(dot,document.createTextNode(names[key]));b.onclick=()=>{w.frame.material=key;scene.updateWork(w);changed();renderEditor();};swatches.append(b);}area.append(swatches);
     if(w.frame.material==='custom')area.append(field('Lijstkleur','color',w.frame.color,v=>{w.frame.color=v;scene.updateWork(w);changed();}));
-    for(const [key,title,min,max]of [['width','Lijstbreedte',1,10],['depth','Lijstdiepte',1,12],['mat','Passe-partout',0,16]])area.append(field(title,'range',w.frame[key],v=>{w.frame[key]=v;scene.updateWork(w);changed();},{min,max,step:.5,unit:' cm'}));
+    for(const [key,title,min,max]of [['width','Lijstbreedte',1,10],['depth','Lijstdiepte',1,12]])area.append(field(title,'range',w.frame[key],v=>{w.frame[key]=v;scene.updateWork(w);changed();},{min,max,step:.5,unit:' cm'}));
     area.append(button('Deze lijst op alle werken in de zaal',()=>{r.works.forEach(item=>{item.frame={...w.frame};scene.updateWork(item);});changed();toast('Lijst toegepast op deze zaal.');}),button('Bekijk dit werk van dichtbij',()=>scene.focus(w)),button('Werk verwijderen',()=>{if(!confirm('Dit werk uit het concept verwijderen?'))return;r.works=r.works.filter(item=>item.id!==w.id);selectedId=null;redraw();renderEditor();},'danger'),note('De bestaande namen zijn werkbeschrijvingen. Je kunt hier de officiële titels invullen.'));return;
   }
   if(tab==='pedestal'){
@@ -95,7 +96,7 @@ function renderEditor(){
 }
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;selectedId=null;renderEditor();});
 $('roomSelect').onchange=e=>loadRoom(gallery.rooms.findIndex(r=>r.id===e.target.value));$('overview').onclick=()=>scene.overview();$('screenshot').onclick=()=>scene.downloadView();$('preview').onclick=()=>window.open(publicUrl,'_blank','noopener');
-$('publish').onclick=async()=>{const b=$('publish');b.disabled=true;try{await save();await api('/api/publish',{method:'POST',body:'{}'});toast('Gepubliceerd op de galerijserver. Bekijk de site om het resultaat te zien.');$('saveStatus').textContent='Gepubliceerd';}catch(e){toast(e.message);}finally{b.disabled=false;}};
+$('publish').onclick=async()=>{const b=$('publish');b.disabled=true;try{await save();$('saveStatus').textContent='Dag- en nachtbeeld voorbereiden…';const opening=await captureOpeningPosters(validateGallery(gallery));await api('/api/publish',{method:'POST',body:JSON.stringify({opening})});toast('Gepubliceerd op de galerijserver. Bekijk de site om het resultaat te zien.');$('saveStatus').textContent='Gepubliceerd';}catch(e){toast(e.message);}finally{b.disabled=false;}};
 $('logout').onclick=async()=>{try{await save();await api('/api/logout',{method:'POST',body:'{}'});location.href='/login';}catch(e){toast(e.message);}};
 $('export').onclick=()=>{const data=JSON.stringify(validateGallery(gallery),null,2);const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='gallery.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('import').onclick=async()=>{try{const f=await pickFile('.json');if(!f)return;if(f.size>100*1024*1024)throw Error('Bestand is te groot.');const next=validateGallery(JSON.parse(await f.text()));if(!confirm('Het huidige concept vervangen door dit galerijbestand?'))return;gallery=next;changed();await loadRoom(0);}catch(e){toast(e.message);}};

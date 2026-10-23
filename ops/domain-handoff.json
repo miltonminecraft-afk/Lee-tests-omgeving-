@@ -48,5 +48,6 @@
     "Lokale browseraanmeldingen en Windows-bestanden gaan niet mee in deze overdracht. Alle benodigde gepubliceerde sitebestanden staan wel in deze repository.",
     "De algemene kwaliteitswensen voor muren/vloeren zijn nog niet allemaal opgelost. Deze taak is de domeinkoppeling, geen claim dat alle kwaliteitswerk klaar is."
   ],
-  "mac_prompt": "Open https://github.com/miltonminecraft-afk/Lee-tests-omgeving- en lees ops/domain-handoff.json. Maak de koppeling naar leemobero.com af via mijn Cloudflare en GitHub. Behoud de huidige galerij en controleer dat HTTPS en de 3D-omgeving op het domein werken."
+  "mac_prompt": "Open https://github.com/miltonminecraft-afk/Lee-tests-omgeving- en lees ops/domain-handoff.json. Maak de koppeling naar leemobero.com af via mijn Cloudflare en GitHub. Behoud de huidige galerij en controleer dat HTTPS en de 3D-omgeving op het domein werken.",
+  "gallery_update": "Actuele main bevat een direct openingsbeeld met dag/nacht-varianten, vernieuwd bij editorpublicatie, geleidelijke camera-overgang, twee verplaatsbare sokkels per nis en bank 1.5 tegel naar rechts (rotatie 33 graden behouden). Gebruik altijd actuele main; oudere verified_gallery_commit is de vorige gecontroleerde basis."
 }

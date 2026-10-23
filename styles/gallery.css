@@ -17,3 +17,16 @@ body:has(.masthead) .experience{height:calc(100svh - 192px)}
 
 .experience[aria-busy="true"] .viewport{visibility:hidden}
 @media(pointer:coarse){#walk{display:none}}
+
+/* First paint is a small image of the exact opening camera, not a partial 3D room. */
+.opening-poster{position:absolute;inset:0;z-index:3;overflow:hidden;background:#c9ae83;opacity:1;transition:opacity 450ms ease;pointer-events:auto}
+.opening-poster img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+.opening-poster-out{opacity:0}
+.loading.opening-loading{background:transparent;pointer-events:none;align-items:flex-end;justify-content:flex-end;padding:20px}
+.opening-loading p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.opening-loading .loader{width:22px;height:22px;background:#f7f4edaa;border-color:#fff8;border-top-color:#4a523e}
+@media(prefers-reduced-motion:reduce){.opening-poster{transition:none}}
+
+.opening-fallback{display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 32%,#ffe4ac,#bba17d 80%)}
+.opening-fallback img{height:66%;width:auto;max-width:90%;object-fit:contain;border:4px solid var(--opening-frame,#543b2d);box-shadow:0 2px 8px #30271966}
+html[data-opening-lighting="night"] .opening-fallback{background:radial-gradient(ellipse at 50% 32%,#9c8051,#292820 80%)}

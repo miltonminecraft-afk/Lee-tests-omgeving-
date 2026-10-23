@@ -3,7 +3,7 @@ export async function loadCompleteRoom({load,prepare,reveal,fail}) {
   try {
     await load();
     await prepare();
-    reveal();
+    await reveal();
     return true;
   } catch(error) {
     fail(error);

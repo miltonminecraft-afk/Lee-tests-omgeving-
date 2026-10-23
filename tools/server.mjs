@@ -1,3 +1,5 @@
+import {openingHtml,decodePoster} from './opening-poster.mjs';
+import {openingSignature} from '../js/opening-poster-data.js';
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -6,7 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {validateGallery} from '../js/model.js';
 import {createWeatherLookup,weatherCoordinates} from './weather.mjs';
 import {createMaterialLibrary} from './material-library.mjs';
-const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.txt':'text/plain; charset=utf-8'};
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.txt':'text/plain; charset=utf-8'};
 const MAX_BODY=100*1024*1024;
 MIME['.mp4']='video/mp4';
 async function atomic(file,data){await fs.mkdir(path.dirname(file),{recursive:true});const tmp=file+'.'+randomBytes(5).toString('hex')+'.tmp';await fs.writeFile(tmp,data);await fs.rename(tmp,file);}
@@ -24,7 +26,7 @@ export async function createGalleryServers({root=path.resolve(import.meta.dirnam
   function token(req){return req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(cookieName+'='))?.slice(cookieName.length+1);}
   function authenticated(req){const t=token(req),end=sessions.get(t);if(!end||end<Date.now()){sessions.delete(t);return false;}return true;}
   function headers(res){res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://dl.polyhaven.org https://cdn.polyhaven.com;  connect-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'");}
-  async function serveFile(res,file){try{const data=await fs.readFile(file);res.writeHead(200,{'Content-Type':MIME[path.extname(file)]||'application/octet-stream'});res.end(data);}catch{json(res,404,{error:'Niet gevonden'});}}
+  async function serveFile(res,file){try{let data=await fs.readFile(file);if(file===path.join(root,'admin/opening-capture.html')){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("frame-ancestors 'none'","frame-ancestors 'self'"));}if(file===path.join(root,'index.html'))data=Buffer.from(await openingHtml(data.toString('utf8'),root,JSON.parse(await fs.readFile(publishedFile,'utf8'))));res.writeHead(200,{'Content-Type':MIME[path.extname(file)]||'application/octet-stream'});res.end(data);}catch{json(res,404,{error:'Niet gevonden'});}}
   function safeAsset(url){if(url==='/'||url==='/index.html')return 'index.html';if(/^\/(images|styles|vendor|js|content)\/[a-zA-Z0-9_./-]+$/.test(url)&&!url.includes('..')&&!url.includes('/.'))return url.slice(1);return null;}
   const lookupWeather=createWeatherLookup(),weatherLimits=new Map();
   const publicServer=http.createServer(async(req,res)=>{headers(res);try{
@@ -62,10 +64,22 @@ export async function createGalleryServers({root=path.resolve(import.meta.dirnam
     if(pathname==='/api/materials/import'&&req.method==='POST'){const data=await body(req,1024);return json(res,200,await materialLibrary.load(data.id,data.quality));}
     if(pathname==='/api/concept'&&req.method==='GET')return serveFile(res,path.join(root,'design/gallery-concept.png'));
     if(pathname==='/api/gallery'&&req.method==='PUT'){const data=validateGallery(await body(req));await serialized(()=>atomic(draftFile,JSON.stringify(data,null,2)));return json(res,200,{ok:true});}
-    if(pathname==='/api/publish'&&req.method==='POST'){await serialized(async()=>{const draft=await readDraft();await atomic(path.join(dataDir,'previous-published.json'),await fs.readFile(publishedFile));await atomic(publishedFile,JSON.stringify(draft,null,2));});return json(res,200,{ok:true});}
+    if(pathname==='/api/publish'&&req.method==='POST'){
+      const payload=await body(req,12*1024*1024);
+      await serialized(async()=>{const draft=await readDraft(),signature=await openingSignature(draft);let opening=null;
+        if(payload.opening){if(payload.opening.signature!==signature)throw Error('Het concept is aangepast tijdens de opname. Publiceer opnieuw.');
+          const day=decodePoster(payload.opening.day),night=decodePoster(payload.opening.night),prefix='images/opening/gallery-'+signature.slice(0,20);
+          opening={signature,day:prefix+'-day.webp',night:prefix+'-night.webp'};
+          await atomic(path.join(root,opening.day),day);await atomic(path.join(root,opening.night),night);
+        }
+        await atomic(path.join(dataDir,'previous-published.json'),await fs.readFile(publishedFile));
+        await atomic(path.join(root,'content/opening.json'),JSON.stringify(opening||{},null,2));
+        await atomic(publishedFile,JSON.stringify(draft,null,2));
+      });return json(res,200,{ok:true});
+    }
     if(req.method!=='GET')return json(res,405,{error:'Methode niet toegestaan'});
     if(pathname==='/')return serveFile(res,path.join(root,'admin/index.html'));
-    if(['/admin/app.js','/admin/materials.js'].includes(pathname))return serveFile(res,path.join(root,pathname.slice(1)));
+    if(['/admin/app.js','/admin/materials.js','/admin/opening-poster.js','/admin/opening-capture.js','/admin/opening-capture.html'].includes(pathname))return serveFile(res,path.join(root,pathname.slice(1)));
     const file=safeAsset(pathname);if(file&&file!=='index.html')return serveFile(res,path.join(root,file));return json(res,404,{error:'Niet gevonden'});
   }catch(e){json(res,400,{error:e.message||'Verzoek kon niet verwerkt worden'});}});
   await new Promise((resolve,reject)=>{publicServer.once('error',reject);publicServer.listen(publicPort,host,resolve);});

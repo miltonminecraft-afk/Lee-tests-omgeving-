@@ -1,3 +1,4 @@
+import {openingHtml,openingConfig} from './opening-poster.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
@@ -13,6 +14,7 @@ await fs.rm(dist,{recursive:true,force:true});
 await fs.mkdir(dist,{recursive:true});
 // Explicit allowlist: administration, credentials and private drafts are never deployed to Pages.
 const gallery=JSON.parse(await fs.readFile(path.join(root,'content/gallery.json'),'utf8'));
+const opening=await openingConfig(root,gallery),openingFiles=new Set([opening.day,opening.night].filter(Boolean));
 const splats=JSON.parse(await fs.readFile(path.join(root,candidate?'.local/release-candidate-manifest.json':'content/splats.json'),'utf8'));
 if(splats.proxy==='images/splats/room-proxy-compact.glb')await fs.writeFile(path.join(root,splats.proxy),compactProxy(await fs.readFile(path.join(root,'images/splats/room-proxy.glb'))));
 const models=new Set(),materials=new Set();
@@ -49,6 +51,7 @@ for(const name of ['index.html','images','js','styles','vendor','content'])await
  const relative=path.relative(root,source).replaceAll('\\','/'),parts=relative.split('/');
  if(relative.endsWith('.before-concept.json')||relative.endsWith('.download'))return false;
  if(parts[0]==='images'&&parts[1]==='studio')return false;
+ if(parts[0]==='images'&&parts[1]==='opening'&&parts[2]&&!openingFiles.has(relative))return false;
  if(relative==='images/models/gallery-concept/room.glb'||relative==='images/models/concept_bench/bench.glb')return false;
  if(parts[0]==='images'&&parts[1]==='models'&&parts[2]&&!models.has(parts[2]))return false;
  if(parts[0]==='images'&&parts[1]==='material-library'&&parts[2]&&!materials.has(parts[2]))return false;
@@ -79,7 +82,7 @@ for(const name of modules){
 }
 const index=path.join(dist,'index.html');
 const preloads=[`js/playcanvas-scene.js?v=${revision}`,`vendor/playcanvas/playcanvas.mjs`,'vendor/three.module.js'].map(url=>`<link rel="modulepreload" href="${url}">`).join('');
-await fs.writeFile(index,(await fs.readFile(index,'utf8')).replace(/(src=["']js\/public\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`).replace('</head>',preloads+'</head>'));
+await fs.writeFile(index,(await openingHtml(await fs.readFile(index,'utf8'),root,gallery)).replace(/(src=["']js\/public\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`).replace('</head>',preloads+'</head>'));
 await fs.writeFile(path.join(dist,'.nojekyll'),'');
 async function size(folder){let total=0;for(const file of await fs.readdir(folder,{withFileTypes:true})){const target=path.join(folder,file.name);total+=file.isDirectory()?await size(target):(await fs.stat(target)).size;}return total;}
 const bytes=await size(dist);if(bytes>=1e9)throw Error('Public build exceeds the Pages size limit');

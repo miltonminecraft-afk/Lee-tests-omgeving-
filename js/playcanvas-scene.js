@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
 import {GalleryScene as ConceptScene} from './concept-scene.js';
+import {openingPose} from './opening-view.js';
 import {ASSETS} from './assets.js';
 import {WalkNavigation} from './navigation.js';
 import {createSplatRenderer} from './playcanvas-splat-renderer.js';
@@ -11,13 +12,13 @@ import {waitForSplatFrame} from './playcanvas-ready.js';
 
 // Reuse approved positioning, camera transitions, touch controls and collisions.
 export class GalleryScene{
- constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onFatal=onError,onInspect=()=>{},mobile=false,manifestUrl=new URL('../content/splats.json',import.meta.url).href,frameUrl=null,api='auto'}={}){
+ constructor(container,{onSelect=()=>{},onPortal=()=>{},onError=()=>{},onFatal=onError,onInspect=()=>{},mobile=false,manifestUrl=new URL('../content/splats.json',import.meta.url).href,frameUrl=null,api='auto',lighting=null,capture=false}={}){
   Object.assign(this,{container,onSelect,onPortal,onError,onFatal,onInspect,mobile,presenting:false,loadingRoom:true,generation:0,inspected:null});
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','Interactieve galerij');canvas.tabIndex=0;canvas.style.touchAction='none';container.append(canvas);
   this.renderer={domElement:canvas};this.camera=new THREE.PerspectiveCamera(50,1,.08,450);this.controls={target:new THREE.Vector3(),enabled:true,update(){}};this.viewDirection=new THREE.Vector3();this.navigation=new WalkNavigation(this);this.raycaster=new THREE.Raycaster();this.clickables=[];this.placed=[];
   this.bindPicking(canvas);this.overview(false);
   this.manifestReady=fetch(manifestUrl).then(async r=>{if(!r.ok)throw Error('De splatbibliotheek kon niet laden.');return r.json();});
-  this.frameUrl=frameUrl;
+  this.frameUrl=frameUrl;this.lightingOverride=lighting;this.capture=capture;
   this.ready=createSplatRenderer(canvas,{api,width:Math.max(1,container.clientWidth),height:Math.max(1,container.clientHeight)}).then(engine=>{
    this.engine=engine;const {pc,app}=engine;this.app=app;
    engine.graphicsDevice.on('devicelost',()=>{this.contextLost=true;this.presenting=false;this.onFatal(Error('De 3D-weergave is onderbroken.'));});
@@ -50,7 +51,7 @@ export class GalleryScene{
   const path=manifest.relightable?.[room.palette]||manifest.relightable?.approved;
   if(!path)throw Error('Voor deze renderer is nog geen geteste ruimte beschikbaar.');
   const url=path=>new URL('../'+path,import.meta.url).href,adjacent=nextRoom||previousRoom;
-  const requested=new URLSearchParams(location.search).get('lighting'),hour=new Date().getHours();
+  const requested=this.lightingOverride||new URLSearchParams(location.search).get('lighting'),hour=new Date().getHours();
   this.lighting=requested==='night'||requested==='day'?requested:room.light===0||hour<7||hour>=20?'night':'day';
   const framePath=manifest.nativeSogFrames?.walnut?.[this.lighting]||'images/splats/frames/walnut-'+this.lighting+'-detail.sog';
   const frameUrl=this.frameUrl||url(framePath);
@@ -121,11 +122,20 @@ export class GalleryScene{
   const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost;
   if(visible!==this.renderVisible){this.renderVisible=visible;this.app.autoRender=visible;}
   if(this.presenting&&!document.hidden&&this.container.clientHeight){
-   if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/1100),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(t===1)this.transition=null;}
+   if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/(this.transition.duration||1100)),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(this.transition.fromFov!==undefined){this.camera.fov=this.transition.fromFov+(50-this.transition.fromFov)*s;this.camera.updateProjectionMatrix();}if(t===1)this.transition=null;}
    this.navigation.update();this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);this.checkPortal();this.camera.lookAt(this.controls.target);this.updateInspection();
   }
   this.sky?.tick(performance.now()/1000);
+  this.renderCamera.camera.fov=this.camera.fov;
   this.renderCamera.setPosition(...this.camera.position.toArray());this.renderCamera.lookAt(...this.controls.target.toArray());
+ }
+ openingView(){
+  const pose=openingPose(this.camera.aspect,this.room);this.camera.fov=pose.fov;this.camera.updateProjectionMatrix();
+  this.move(new THREE.Vector3(...pose.position),new THREE.Vector3(...pose.target),false);
+ }
+ openingOverview(){
+  this.overview();if(this.transition){this.transition.duration=4200;this.transition.fromFov=this.camera.fov;}
+  else{this.camera.fov=50;this.camera.updateProjectionMatrix();}
  }
  async prepareFrame(){
   await this.ready;this.tick();
@@ -135,7 +145,7 @@ export class GalleryScene{
  }
  resize(){
   const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;
-  const ratio=Math.min(devicePixelRatio,this.mobile?1.3:1.7);this.renderer.domElement.style.width=w+'px';this.renderer.domElement.style.height=h+'px';
+  const ratio=this.capture?1:Math.min(devicePixelRatio,this.mobile?1.3:1.7);this.renderer.domElement.style.width=w+'px';this.renderer.domElement.style.height=h+'px';
   this.app?.setCanvasResolution(this.engine.pc.RESOLUTION_FIXED,Math.round(w*ratio),Math.round(h*ratio));
   this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
  }
