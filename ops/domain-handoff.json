@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-23T15:07:24.598666+00:00",
+  "updated_at": "2026-10-23T18:12:23.820330+00:00",
   "task": "Koppel de bestaande geoptimaliseerde Lee Mobero-galerij aan leemobero.com en controleer HTTPS en de 3D-weergave.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
@@ -49,14 +49,17 @@
     "De algemene kwaliteitswensen voor muren/vloeren zijn nog niet allemaal opgelost. Deze taak is de domeinkoppeling, geen claim dat alle kwaliteitswerk klaar is."
   ],
   "mac_prompt": "Lees in GitHub-repository miltonminecraft-afk/Lee-tests-omgeving- op main het bestand ops/domain-handoff.json. Neem de actuele galerij en daarin vastgelegde wijzigingen over. Maak daarna via mijn ingelogde Cloudflare en GitHub de koppeling naar leemobero.com af, behoud de huidige inrichting en controleer HTTPS, openingsbeeld en complete 3D-zaal. Start geen achtergrondtraining.",
-  "gallery_update": "Deze release vervangt de afgekeurde effen mesh-sokkels door zelfstandige marmeren SOG-splats. Bankpositie, zaalontwerp en bestaande werken blijven behouden. Zie images/splats/pedestals/provenance.json voor exacte herkomst en techniek.",
+  "gallery_update": "Zaalwissels: vaste PlayCanvas-lagen voorkomen oplopende sorteerbuffers; volgende zaal en passende lijsten vooraf voorbereid; huidig beeld blijft tijdens de renderwissel staan. Bestaande splats, materialen en resolutie behouden.",
   "completed_changes": [
     "Bankje in beide zalen 1,5 vloertegel naar rechts: x -3 naar -0.825 (+2.175 meter). Z -2.8 en rotatie 33 graden behouden.",
     "Twee afzonderlijk bewerkbare marmeren Gaussian-splat sokkels per nis, 1.04 en 0.73 meter hoog. Vierkante bron 620888 splats, circa 2.1 MB gedeeld door beide instanties; ronde editorvariant 551344 splats. Cycles 4K-diffuse materiaalbake op volledig bemonsterde geometrie, inclusief onderkant en afgeronde randen. Afmetingen/positie/kleur en verwijderen blijven bewerkbaar.",
     "Bij openen direct een klein WebP-beeld van het eerste geplaatste schilderij. Pas na volledige 3D-load vervaagt het beeld en beweegt de camera in 4.2 seconden rustig naar het overzicht. Autoplay start 10 seconden na laden.",
     "Aparte dag- en nachtbeelden; dezelfde lichtstand als de 3D-zaal. Bij Publiceer in de lokale editor worden beide beelden opnieuw opgenomen met de publieke renderer. Een inhoudssignatuur voorkomt gebruik van een verouderd beeld na wijzigingen.",
     "Geen beheerknoppen op de publieke website. Beheerserver en opnamepagina blijven achter authenticatie; opname-iframe uitsluitend dezelfde origin.",
-    "16 lokale tests geslaagd; GitHub Pages-build en publicatie geslaagd; WebGPU close-up dag en WebGL op mobiel schermformaat gecontroleerd zonder browserfouten. Geen echte handsetmeting."
+    "16 lokale tests geslaagd; GitHub Pages-build en publicatie geslaagd; WebGPU close-up dag en WebGL op mobiel schermformaat gecontroleerd zonder browserfouten. Geen echte handsetmeting.",
+    "Zaalvoorbereiding bewaart maximaal huidige en volgende bestemming, deelt SOG-bronnen en fitted frames, en hergebruikt de zaalproxy. Geen nieuwe downloads bij geteste herhaalde zaalwissels.",
+    "Renderlagen behouden hun identiteit; zes bezoeken blijven op 3 native splatlagen, in plaats van oplopen naar 18. Camera- en schaduwupdates alleen bij gewijzigde camerastand.",
+    "Diavoorstelling en handmatige zaalwissels houden de vorige volledige GPU-frame zichtbaar totdat alle onderdelen van de bestemming gerenderd zijn; geen tussentijds laadscherm."
   ],
   "important_limits": [
     "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",
@@ -66,7 +69,53 @@
     "Sokkels zijn uit Blender-geometrie en een Cycles-materiaalbake omgezette Gaussians, geen uit fotos getraind model. De 4K-bake gebruikt een uitsnede zonder voegen uit de aanwezige CC0 marble_01-bron. Zeg niet dat er nieuwe GPU-training heeft plaatsgevonden. Dag/nacht wordt door de viewer getint; bestaande onverlichte sokkelnis blijft in de nacht donker."
   ],
   "validation_commands": [
-    "node --test tools/gallery.test.mjs tools/opening-poster.test.mjs tools/pedestal-splats.test.mjs tools/playcanvas-ready.test.mjs",
+    "node --test --test-isolation=none tools/gallery.test.mjs tools/opening-poster.test.mjs tools/pedestal-splats.test.mjs tools/playcanvas-ready.test.mjs tools/room-performance.test.mjs",
     "node tools/build-public.mjs"
-  ]
+  ],
+  "room_performance": {
+    "test_environment": "Local desktop browser, unchanged assets/resolution, six alternating visits per API. Not an actual mobile handset or internet latency measurement.",
+    "webgpu": {
+      "before_return_ms": [
+        660.4,
+        648.6
+      ],
+      "after_return_ms": [
+        43.9,
+        38.6
+      ],
+      "before_layer_counts": [
+        3,
+        6,
+        9,
+        12,
+        15,
+        18
+      ],
+      "after_layer_counts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "before_final_storage_buffer_bytes": 3580942212,
+      "after_final_storage_buffer_bytes": 627341972,
+      "median_frame_ms_before": 8.8,
+      "median_frame_ms_after": 8.8
+    },
+    "webgl2": {
+      "before_return_ms": [
+        840.4,
+        821.3
+      ],
+      "after_return_ms": [
+        127.8,
+        152.5
+      ],
+      "median_frame_ms_before": 5.7,
+      "median_frame_ms_after": 5.6
+    },
+    "limits": "No claim of a major FPS gain or literal zero rendering time. Destination resources are prefetched; last complete frame covers the remaining native scene/sort swap. Cache holds at most two settled destinations except while protecting active/in-flight work."
+  }
 }

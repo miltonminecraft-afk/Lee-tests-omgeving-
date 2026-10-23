@@ -1,3 +1,4 @@
+import {retainPreparedRooms} from './room-preparation-cache.js';
 import * as THREE from '../vendor/three.module.js';
 import {GalleryScene as ConceptScene} from './concept-scene.js';
 import {openingPose} from './opening-view.js';
@@ -5,7 +6,7 @@ import {pedestalSplatSource,pedestalTransform,pedestalColorModifier} from './ped
 import {ASSETS} from './assets.js';
 import {WalkNavigation} from './navigation.js';
 import {createSplatRenderer} from './playcanvas-splat-renderer.js';
-import {galleryObjects,cacheRoomLighting} from './playcanvas-gallery-objects.js';
+import {galleryObjects,cacheRoomLighting,prefetchGalleryProxy} from './playcanvas-gallery-objects.js';
 import {createFloorSunlight} from './playcanvas-sunlight.js';
 import {createPlayCanvasSky} from './playcanvas-sky.js';
 import {PlayCanvasFrameLibrary} from './playcanvas-frames.js';
@@ -19,7 +20,7 @@ export class GalleryScene{
   this.renderer={domElement:canvas};this.camera=new THREE.PerspectiveCamera(50,1,.08,450);this.controls={target:new THREE.Vector3(),enabled:true,update(){}};this.viewDirection=new THREE.Vector3();this.navigation=new WalkNavigation(this);this.raycaster=new THREE.Raycaster();this.clickables=[];this.placed=[];
   this.bindPicking(canvas);this.overview(false);
   this.manifestReady=fetch(manifestUrl).then(async r=>{if(!r.ok)throw Error('De splatbibliotheek kon niet laden.');return r.json();});
-  this.frameUrl=frameUrl;this.lightingOverride=lighting;this.capture=capture;
+  this.preparedRooms=new Map();this.frameLibraries=new Map();this.frameUrl=frameUrl;this.lightingOverride=lighting;this.capture=capture;
   this.ready=createSplatRenderer(canvas,{api,width:Math.max(1,container.clientWidth),height:Math.max(1,container.clientHeight)}).then(engine=>{
    this.engine=engine;const {pc,app}=engine;this.app=app;
    engine.graphicsDevice.on('devicelost',()=>{this.contextLost=true;this.presenting=false;this.onFatal(Error('De 3D-weergave is onderbroken.'));});
@@ -43,46 +44,80 @@ export class GalleryScene{
    }else if(this.floor){const floor=this.raycaster.intersectObject(this.floor,true)[0];if(floor)this.navigation.walkTo(floor.point);}
   });
  }
- async loadRoom(room,nextRoom=null,{previousRoom=null}={}){
-  const generation=++this.generation;this.loadingRoom=true;this.presenting=false;this.navigation.path=[];this.navigation.keys.clear();
-  await this.ready;const manifest=await this.manifestReady,{pc,app}=this.engine;
-  this.sunlight?.dispose();this.sunlight=null;this.sky?.dispose();this.sky=null;this.lightProcessor?.destroy();this.lightProcessor=null;
-  for(const entity of this.placed)entity.destroy();this.placed=[];this.fixtures?.dispose();this.fixtures=null;
-  Object.assign(this,{room,nextRoom,previousRoom});this.onInspect(null);this.inspected=null;
+ roomLighting(room){
+  const requested=this.lightingOverride||new URLSearchParams(location.search).get('lighting'),hour=new Date().getHours();
+  return requested==='night'||requested==='day'?requested:room.light===0||hour<7||hour>=20?'night':'day';
+ }
+ roomKey(room,nextRoom,previousRoom){return JSON.stringify([room,nextRoom,previousRoom,this.roomLighting(room),this.frameUrl]);}
+ async prefetchRoom(room,nextRoom=null,{previousRoom=null}={}){
+  if(!room)return;
+  await this.prepareRoom(room,nextRoom,previousRoom);this.trimPreparedRooms();
+ }
+ async prepareRoom(room,nextRoom=null,previousRoom=null){
+  await this.ready;const manifest=await this.manifestReady;
+  const key=this.roomKey(room,nextRoom,previousRoom);
+  if(this.preparedRooms.has(key)){const entry=this.preparedRooms.get(key);this.preparedRooms.delete(key);this.preparedRooms.set(key,entry);return entry.pending;}
+  const lighting=this.roomLighting(room),url=path=>new URL('../'+path,import.meta.url).href;
   const path=manifest.relightable?.[room.palette]||manifest.relightable?.approved;
   if(!path)throw Error('Voor deze renderer is nog geen geteste ruimte beschikbaar.');
-  const url=path=>new URL('../'+path,import.meta.url).href,adjacent=nextRoom||previousRoom;
-  const requested=this.lightingOverride||new URLSearchParams(location.search).get('lighting'),hour=new Date().getHours();
-  this.lighting=requested==='night'||requested==='day'?requested:room.light===0||hour<7||hour>=20?'night':'day';
-  const framePath=manifest.nativeSogFrames?.walnut?.[this.lighting]||'images/splats/frames/walnut-'+this.lighting+'-detail.sog';
-  const frameUrl=this.frameUrl||url(framePath);
-  if(this.activeFrameUrl!==frameUrl){this.frameLibrary?.dispose();this.frameLibrary=null;this.activeFrameUrl=frameUrl;}
-  const works=[...room.works,...(adjacent?.works.slice(0,2)||[])],placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
+  const frameUrl=this.frameUrl||url(manifest.nativeSogFrames?.walnut?.[lighting]||'images/splats/frames/walnut-'+lighting+'-detail.sog');
+  const adjacent=nextRoom||previousRoom,works=[...room.works,...(adjacent?.works.slice(0,2)||[])],placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
   const objectSource=item=>manifest.assets[item.asset]?{path:manifest.assets[item.asset].day,type:'gsplat'}:ASSETS[item.asset]?{path:ASSETS[item.asset].url,type:'container'}:null;
   const pedestalSources=(room.pedestals||[]).map(item=>({item,source:pedestalSplatSource(manifest,item)}));
   const keep=new Set([url(path),frameUrl,...pedestalSources.map(p=>url(p.source.day)),...works.map(w=>url(w.src)),...placed.map(p=>{const a=objectSource(p);if(!a)throw Error('Object ontbreekt: '+p.asset);return url(a.path);})]);
+  const entry={key,keep,frameUrl,frameKeys:new Set(),settled:false};
+  entry.pending=(async()=>{
+   const imageReady=Promise.all([...new Set(works.map(w=>w.src))].map(async src=>[src,await this.engine.load(url(src),'texture')])).then(a=>new Map(a));
+   if(!this.frameLibraries.has(frameUrl)){
+    const pending=this.engine.load(frameUrl).then(asset=>new PlayCanvasFrameLibrary(this.app,asset));
+    this.frameLibraries.set(frameUrl,pending);pending.catch(()=>{if(this.frameLibraries.get(frameUrl)===pending)this.frameLibraries.delete(frameUrl);});
+   }
+   const library=this.frameLibraries.get(frameUrl);
+   const framesReady=Promise.all([library,imageReady]).then(async([frames,images])=>{
+    await Promise.all(room.works.map(async work=>{
+     const image=images.get(work.src).resource,ratio=image.width/image.height,maxWidth=work.slot>=20?.9:1.7;
+     let h=2.15,w=h*ratio;if(w>maxWidth){w=maxWidth;h=w/ratio;}
+     const fitted=await frames.load('walnut',{w,h},work.frame);entry.frameKeys.add(fitted.key);
+    }));return frames;
+   });
+   const [roomAsset,images,objects,pedestalAssets,frameLibrary]=await Promise.all([
+    this.engine.load(url(path)),imageReady,
+    Promise.all(placed.map(async item=>({item,type:objectSource(item).type,asset:await this.engine.load(url(objectSource(item).path),objectSource(item).type)}))),
+    Promise.all(pedestalSources.map(async item=>({...item,asset:await this.engine.load(url(item.source.day))}))),framesReady,prefetchGalleryProxy()
+   ]);
+   entry.settled=true;return {key,manifest,lighting,roomAsset,images,objects,pedestalAssets,frameLibrary};
+  })();
+  this.preparedRooms.set(key,entry);
+  entry.pending.catch(()=>{if(this.preparedRooms.get(key)===entry)this.preparedRooms.delete(key);});
+  return entry.pending;
+ }
+ trimPreparedRooms(){
+  // Current + one prepared destination. Shared full-detail sources are loaded
+  // once; additional rooms cannot grow resident asset memory indefinitely.
+  retainPreparedRooms(this.preparedRooms,{active:this.activeRoomKey,requested:this.requestedRoomKey});
+  const keep=new Set([...this.preparedRooms.values()].flatMap(e=>[...e.keep]));
+  for(const [url,pending]of this.frameLibraries){
+   const entries=[...this.preparedRooms.values()].filter(e=>e.frameUrl===url);
+   if(!entries.length){this.frameLibraries.delete(url);pending.then(l=>l.dispose(),()=>{});}
+   else if(entries.every(e=>e.settled))pending.then(l=>l.retain(new Set(entries.flatMap(e=>[...e.frameKeys]))));
+  }
   this.engine.retain(keep);
-  const imageReady=Promise.all([...new Set(works.map(w=>w.src))].map(async src=>[src,await this.engine.load(url(src),'texture')])).then(a=>new Map(a));
-  // Frame SOG and paintings are much smaller than the room. Fit them while the
-  // room is still downloading rather than adding worker time after that wait.
-  const framesReady=Promise.all([this.engine.load(frameUrl),imageReady]).then(async([frameAsset,images])=>{
-   this.frameLibrary??=new PlayCanvasFrameLibrary(app,frameAsset);
-   await Promise.all(room.works.map(work=>{
-    const image=images.get(work.src).resource,ratio=image.width/image.height,maxWidth=work.slot>=20?.9:1.7;
-    let h=2.15,w=h*ratio;if(w>maxWidth){w=maxWidth;h=w/ratio;}
-    return this.frameLibrary.load('walnut',{w,h},work.frame);
-   }));
-  });
-  const [roomAsset,images,objects,pedestalAssets]=await Promise.all([
-   this.engine.load(url(path)),imageReady,
-   Promise.all(placed.map(async item=>({item,type:objectSource(item).type,asset:await this.engine.load(url(objectSource(item).path),objectSource(item).type)}))),
-   Promise.all(pedestalSources.map(async entry=>({...entry,asset:await this.engine.load(url(entry.source.day))}))),framesReady
-  ]);
+ }
+ async loadRoom(room,nextRoom=null,{previousRoom=null}={}){
+  const generation=++this.generation;this.requestedRoomKey=this.roomKey(room,nextRoom,previousRoom);
+  // Keep the current complete room alive while preparing the destination.
+  const prepared=await this.prepareRoom(room,nextRoom,previousRoom);
   if(generation!==this.generation)return;
+  this.loadingRoom=true;this.presenting=false;this.transition=null;this.navigation.path=[];this.navigation.keys.clear();
+  const {manifest,lighting,roomAsset,images,objects,pedestalAssets,frameLibrary}=prepared,{pc,app}=this.engine;
+  this.activeRoomKey=prepared.key;this.lighting=lighting;this.frameLibrary=frameLibrary;
+  this.sunlight?.dispose();this.sunlight=null;this.sky?.dispose();this.sky=null;this.lightProcessor?.destroy();this.lightProcessor=null;
+  for(const entity of this.placed)entity.destroy();this.placed=[];this.fixtures?.dispose();this.fixtures=null;
+  Object.assign(this,{room,nextRoom,previousRoom});this.onInspect(null);this.inspected=null;
   this.fixtures=await galleryObjects(pc,app,room,images,{nextRoom,previousRoom});
   const {layout,layers}=this.fixtures;
 
-  this.sunlight=createFloorSunlight(pc,app,layers,{enabled:this.lighting==='day',mobile:this.mobile});
+  this.sunlight=createFloorSunlight(pc,app,layers,{enabled:this.lighting==='day',mobile:this.mobile});this.lastCameraPose=null;
   this.sky=createPlayCanvasSky(pc,app,layers.sky);this.sky.update(this.lighting==='night'?{cloudCover:8,sunDirection:[.4,-.5,-.3],brightness:.8}:{});
   for(const name of ['layout','world','walls','floor','workGroups','clickables'])this[name]=layout[name];
   this.renderCamera.camera.layers=Object.values(layers).map(l=>l.id);
@@ -118,12 +153,12 @@ export class GalleryScene{
    this.expectedSplats+=asset.resource.numSplats;
   }));
   this.splatLayers=new Set(this.placed.flatMap(entity=>entity.findComponents('gsplat').flatMap(component=>component.layers)));
-  this.frameLibrary.retain(activeFrameKeys);
+  this.trimPreparedRooms();
   // Native PlayCanvas memory release, also used by its octree loader. The GPU
   // texture stays intact; decoded ImageBitmaps are no longer needed after upload.
   // Delay until frame decoding has finished. Device loss already shows retry UI.
   for(const asset of [roomAsset,...objects.map(o=>o.asset),...pedestalAssets.map(o=>o.asset),this.frameLibrary.source])asset.resource.releaseTextureSources?.();
-  this.world.updateMatrixWorld(true);this.loadingRoom=false;this.enteringRoom=false;
+  this.world.updateMatrixWorld(true);this.requestedRoomKey=null;this.loadingRoom=false;this.enteringRoom=false;
  }
  tick(){
   const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost;
@@ -133,8 +168,16 @@ export class GalleryScene{
    this.navigation.update();this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);this.checkPortal();this.camera.lookAt(this.controls.target);this.updateInspection();
   }
   this.sky?.tick(performance.now()/1000);
-  this.renderCamera.camera.fov=this.camera.fov;
-  this.renderCamera.setPosition(...this.camera.position.toArray());this.renderCamera.lookAt(...this.controls.target.toArray());
+  const position=this.camera.position,target=this.controls.target;
+  const pose=[position.x,position.y,position.z,target.x,target.y,target.z,this.camera.fov,this.camera.aspect];
+  if(!this.lastCameraPose||pose.some((v,i)=>v!==this.lastCameraPose[i])){
+   this.renderCamera.camera.fov=this.camera.fov;
+   this.renderCamera.setPosition(position.x,position.y,position.z);this.renderCamera.lookAt(target.x,target.y,target.z);
+   // Directional shadows depend on the camera frustum. Reuse only while it is
+   // unchanged; movement updates immediately at the original resolution.
+   if(this.sunlight)this.sunlight.sun.light.shadowUpdateMode=this.engine.pc.SHADOWUPDATE_THISFRAME;
+   this.lastCameraPose=pose;
+  }
  }
  openingView(){
   const pose=openingPose(this.camera.aspect,this.room);this.camera.fov=pose.fov;this.camera.updateProjectionMatrix();

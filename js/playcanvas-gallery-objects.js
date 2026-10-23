@@ -1,3 +1,4 @@
+import {galleryLayers} from './playcanvas-layers.js';
 import {pedestalContacts} from './pedestal-contact.js';
 import * as THREE from '../vendor/three.module.js';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
@@ -6,10 +7,17 @@ import {conceptLayout} from './concept-layout.js';
 import {spotRecord} from './artwork-lighting.js';
 import {mergeSplatProxy} from './splat-proxy.js';
 
+let proxyBytes;
+async function loadProxy(){
+ proxyBytes??=fetch(new URL('../images/splats/room-proxy-compact.glb',import.meta.url)).then(r=>{if(!r.ok)throw Error('Room proxy failed');return r.arrayBuffer();}).catch(e=>{proxyBytes=null;throw e;});
+ return new GLTFLoader().parseAsync((await proxyBytes).slice(0),'');
+}
+export function prefetchGalleryProxy(){return loadProxy().then(proxy=>{proxy.scene.traverse(o=>{o.geometry?.dispose();for(const m of [].concat(o.material||[]))m.dispose();});});}
+
 // Reuse the approved gallery's existing placement, wall contact, rails and
 // luminaire geometry. This adapter changes the rendering engine only.
 export async function galleryObjects(pc,app,room,images,{nextRoom=null,previousRoom=null}={}){
- const proxy=await new GLTFLoader().loadAsync(new URL('../images/splats/room-proxy-compact.glb',import.meta.url).href);
+ const proxy=await loadProxy();
  const layout=Object.create(ConceptScene.prototype),world=new THREE.Group();world.add(proxy.scene);
  Object.assign(layout,{room,world,pedestalProxyOnly:true,layout:conceptLayout(room),walls:[],workGroups:new Map(),pedestalGroups:new Map(),lightTargets:new Map(),clickables:[],glows:[],materials:{dark:new THREE.MeshStandardMaterial({color:'#252622',roughness:.48,metalness:.35})},library:{bindings:new Map(),prune(){},material:(kind,options)=>new THREE.MeshStandardMaterial(options)}});
  proxy.scene.traverse(o=>{if(o.isMesh&&/wall|portal|doorway/i.test(o.name))layout.walls.push(o);});
@@ -32,8 +40,7 @@ export async function galleryObjects(pc,app,room,images,{nextRoom=null,previousR
   const target=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({visible:false}));target.rotation.x=-Math.PI/2;target.position.set(x,.01,z);layout.floor.add(target);
  }
  mergeSplatProxy(proxy.scene);world.updateMatrixWorld(true);
- const layers={};for(const [key,id]of [['sky',29],['outsideDepth',30],['outside',31],['room',32],['insideDepth',33],['sunlight',36],['contacts',38],['works',34],['objects',35]])layers[key]=new pc.Layer({id,name:key,clearDepthBuffer:key==='room'});
- const composition=new pc.LayerComposition();composition.pushOpaque(layers.sky);composition.pushOpaque(layers.outsideDepth);composition.pushTransparent(layers.outside);composition.pushTransparent(layers.room);composition.pushOpaque(layers.insideDepth);composition.pushTransparent(layers.sunlight);composition.pushTransparent(layers.contacts);composition.pushOpaque(layers.works);composition.pushTransparent(layers.objects);app.scene.layers=composition;
+ const layers=galleryLayers(pc,app);
  const materialCache=new Map(),meshCache=new Map(),entities=[],batchGroups=new Map();
  for(const layer of [layers.outsideDepth,layers.insideDepth,layers.works])batchGroups.set(layer.id,app.batcher.addGroup(layer.name,false,100,undefined,[layer.id]));
  function meshInstance(object,layer,depthOnly=false,image=null,lit=false){

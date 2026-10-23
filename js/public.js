@@ -1,3 +1,4 @@
+import {holdRoomFrame} from './room-frame-hold.js';
 import {revealOpening} from './opening-view.js';
 import {loadCompleteRoom} from './room-loading.js';
 import {validateGallery} from './model.js';
@@ -16,15 +17,28 @@ async function showRoom(index){
  const request=++roomRequest;clearTimeout(timer);loadingState(true);roomIndex=index;selected=-1;
  const r=gallery.rooms[index];$('roomSelect').value=r.id;$('thumbnails').replaceChildren();
  for(const work of orderedWorks(r)){const b=document.createElement('button');b.className='thumb';b.dataset.id=work.id;b.title=work.title;b.disabled=true;b.setAttribute('aria-label',`Bekijk ${work.title}`);const img=new Image();img.src=work.src;img.alt=work.title;b.append(img);b.onclick=()=>{playback(false);selectWork(work);};$('thumbnails').append(b);}
- $('loading').hidden=false;
+ $('loading').hidden=!opening;
+ let releaseFrame=()=>{};
+ if(!opening){
+  try{await scene.prefetchRoom(r,roomNeighbours(gallery.rooms,index).next,{previousRoom:roomNeighbours(gallery.rooms,index).previous});releaseFrame=await holdRoomFrame(scene);}
+  catch(error){loadFailed(error);return false;}
+ }
  return loadCompleteRoom({
   load:()=>scene.loadRoom(r,roomNeighbours(gallery.rooms,index).next,{previousRoom:roomNeighbours(gallery.rooms,index).previous}),
   prepare:async()=>{if(opening&&!$('openingPoster').hidden)scene.openingView();else scene.overview(false);await scene.prepareFrame();},
-  reveal:async()=>{if(request!==roomRequest)return;$('experience').setAttribute('aria-busy','false');$('loading').hidden=true;
+  reveal:async()=>{if(request!==roomRequest)return;$('experience').setAttribute('aria-busy','false');$('loading').hidden=true;releaseFrame();
+   prefetchNextRoom();
    if(opening)await revealOpening({poster:$('openingPoster'),scene,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});
    $('loading').classList.remove('opening-loading');loadingState(false);arm(opening?10000:5000);},
-  fail:loadFailed
+  fail:error=>{releaseFrame();loadFailed(error);}
  });
+}
+function prefetchNextRoom(){
+ let index=roomIndex;
+ for(let n=0;n<gallery.rooms.length;n++){index=(index+1)%gallery.rooms.length;if(gallery.rooms[index].works.length)break;}
+ if(index===roomIndex)return;
+ const neighbours=roomNeighbours(gallery.rooms,index);
+ scene.prefetchRoom(gallery.rooms[index],neighbours.next,{previousRoom:neighbours.previous}).catch(error=>console.warn('Room preparation will retry on entry',error));
 }
 async function advance(){if(roomLoading)return;let works=orderedWorks(gallery.rooms[roomIndex]);if(selected+1>=works.length){let next=roomIndex;for(let n=0;n<gallery.rooms.length;n++){next=(next+1)%gallery.rooms.length;if(gallery.rooms[next].works.length)break;}if(!gallery.rooms[next].works.length)return;if(!await showRoom(next))return;works=orderedWorks(gallery.rooms[roomIndex]);}if(works.length)selectWork(works[(selected+1)%works.length]);}
 function showWorkInfo(work){inspecting=work;$('workInfo').hidden=!work||playing;if(work){$('workInfoTitle').textContent=work.title;$('workInfoKind').textContent=work.kind==='ceramic-photo'?'Foto van keramiek':'Schilderij';}}
