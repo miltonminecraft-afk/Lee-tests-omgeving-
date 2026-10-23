@@ -56,3 +56,9 @@ test('editor publication rejects mismatched snapshots, protects capture routes, 
   assert.throws(()=>decodePoster('data:text/html;base64,AAAA'));
  }finally{await servers?.close();await fs.rm(root,{recursive:true,force:true});}
 });
+
+test('editing the room visible through the doorway invalidates the opening image',async()=>{
+ const source=JSON.parse(await fs.readFile(new URL('../content/gallery.json',import.meta.url),'utf8'));
+ const before=await openingSignature(source);source.rooms[1].works[0].title+=' changed';
+ assert.notEqual(await openingSignature(source),before);
+});

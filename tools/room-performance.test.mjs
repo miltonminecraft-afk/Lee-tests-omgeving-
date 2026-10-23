@@ -30,3 +30,9 @@ test('transition cover captures a completed frame, removes itself once, and reje
   const failed=holdRoomFrame(scene);events.graphicsDevice.emit('devicelost');await assert.rejects(failed);assert.equal(events.listenerCount('frameend'),0);
  }finally{globalThis.document=original;}
 });
+
+test('prefetch cannot evict the full room currently visible through a doorway',()=>{
+ const entries=new Map([['visible-neighbour',{settled:true}],['stale',{settled:true}],['active',{settled:true}],['next',{settled:true}]]);
+ retainPreparedRooms(entries,{active:'active',protectedKeys:new Set(['visible-neighbour']),limit:3});
+ assert.deepEqual([...entries.keys()],['visible-neighbour','active','next']);
+});

@@ -1,7 +1,7 @@
 import {validateGallery} from './model.js';
 export async function openingSignature(gallery){
- const room=validateGallery(gallery).rooms[0];
- const bytes=new TextEncoder().encode(JSON.stringify({version:3,room}));
+ const rooms=validateGallery(gallery).rooms,room=rooms[0];
+ const bytes=new TextEncoder().encode(JSON.stringify({version:4,room,adjacent:rooms[1]||null}));
  const digest=await crypto.subtle.digest('SHA-256',bytes);
  return Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
 }

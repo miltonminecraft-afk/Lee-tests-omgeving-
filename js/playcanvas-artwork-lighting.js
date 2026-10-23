@@ -10,14 +10,21 @@ export function roomSpotModifier(sources){
  processWGSL:`fn process(){let source=getCenter();let center=vec3f(source.x,source.z,-source.y);var light=0.;${wgsl}writeGalleryLight(vec4f(min(light,1.65)/1.65,0.,0.,1.));}`};
 }
 
-export function cacheRoomLighting(pc,app,entity,asset,sources,{ambient=1}={}){
+export function cacheRoomLighting(pc,app,entity,asset,sources,{ambient=1,clipPlane=null}={}){
  asset.resource.format.addExtraStreams([{name:'galleryLight',format:pc.PIXELFORMAT_RGBA8,storage:pc.GSPLAT_STREAM_INSTANCE}]);
  const shader=roomSpotModifier(sources);
- const processor=new pc.GSplatProcessor(app.graphicsDevice,{component:entity.gsplat},{component:entity.gsplat,streams:['galleryLight']},{processGLSL:shader.processGLSL,processWGSL:shader.processWGSL});
+ const plane=clipPlane?.map(v=>Number(v).toFixed(8)).join(',');
+ const clipGLSL=plane?'color.a*=loadGalleryLight().g;':'';
+ const clipWGSL=plane?'*color=vec4f((*color).rgb,(*color).a*loadGalleryLight().g);':'';
+ const visibleGLSL=plane?`step(0.,dot(vec4(center,1.),vec4(${plane})))`:'1.';
+ const visibleWGSL=plane?`select(0.,1.,dot(vec4f(center,1.),vec4f(${plane}))>=0.)`:'1.';
+ const processGLSL=shader.processGLSL.replace('/1.65,0.,0.,1.)',`/1.65,${visibleGLSL},0.,1.)`);
+ const processWGSL=shader.processWGSL.replace('/1.65,0.,0.,1.)',`/1.65,${visibleWGSL},0.,1.)`);
+ const processor=new pc.GSplatProcessor(app.graphicsDevice,{component:entity.gsplat},{component:entity.gsplat,streams:['galleryLight']},{processGLSL,processWGSL});
  processor.process();
  entity.gsplat.setWorkBufferModifier({
-  glsl:`void modifySplatCenter(inout vec3 center){}\nvoid modifySplatRotationScale(vec3 a,vec3 b,inout vec4 rotation,inout vec3 scale){}\nvoid modifySplatColor(vec3 center,inout vec4 color){color.rgb=clamp(color.rgb*(vec3(${Number(ambient).toFixed(4)})+vec3(1.,.89,.75)*(loadGalleryLight().r*1.65)),vec3(0.),vec3(1.));}`,
-  wgsl:`fn modifySplatCenter(center:ptr<function,vec3f>){}\nfn modifySplatRotationScale(a:vec3f,b:vec3f,rotation:ptr<function,vec4f>,scale:ptr<function,vec3f>){}\nfn modifySplatColor(center:vec3f,color:ptr<function,vec4f>){*color=vec4f(clamp((*color).rgb*(vec3f(${Number(ambient).toFixed(4)})+vec3f(1.,.89,.75)*(loadGalleryLight().r*1.65)),vec3f(0.),vec3f(1.)),(*color).a);}`
+  glsl:`void modifySplatCenter(inout vec3 center){}\nvoid modifySplatRotationScale(vec3 a,vec3 b,inout vec4 rotation,inout vec3 scale){}\nvoid modifySplatColor(vec3 center,inout vec4 color){color.rgb=clamp(color.rgb*(vec3(${Number(ambient).toFixed(4)})+vec3(1.,.89,.75)*(loadGalleryLight().r*1.65)),vec3(0.),vec3(1.));${clipGLSL}}`,
+  wgsl:`fn modifySplatCenter(center:ptr<function,vec3f>){}\nfn modifySplatRotationScale(a:vec3f,b:vec3f,rotation:ptr<function,vec4f>,scale:ptr<function,vec3f>){}\nfn modifySplatColor(center:vec3f,color:ptr<function,vec4f>){*color=vec4f(clamp((*color).rgb*(vec3f(${Number(ambient).toFixed(4)})+vec3f(1.,.89,.75)*(loadGalleryLight().r*1.65)),vec3f(0.),vec3f(1.)),(*color).a);${clipWGSL}}`
  });
  entity.gsplat.workBufferUpdate=pc.WORKBUFFER_UPDATE_ONCE;
  return processor;

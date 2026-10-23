@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-23T18:17:38.152915+00:00",
+  "updated_at": "2026-10-23T18:37:41.525079+00:00",
   "task": "Behoud de gepubliceerde Lee Mobero-galerij op leemobero.com en werk verder op basis van de nieuwe opdracht van de gebruiker.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
@@ -47,7 +47,7 @@
     "Lokale browseraanmeldingen en Windows-bestanden gaan niet mee in deze overdracht. Alle benodigde gepubliceerde sitebestanden staan wel in deze repository."
   ],
   "mac_prompt": "Lees ops/domain-handoff.json in miltonminecraft-afk/Lee-tests-omgeving- op main. De galerij is al live op https://leemobero.com/. Neem de beschreven verbeteringen voor zaalwissels over en voer mijn nieuwe opdracht uit zonder bestaand ontwerp of kwaliteit te verminderen. Start geen achtergrondtraining.",
-  "gallery_update": "Zaalwissels: vaste PlayCanvas-lagen voorkomen oplopende sorteerbuffers; volgende zaal en passende lijsten vooraf voorbereid; huidig beeld blijft tijdens de renderwissel staan. Bestaande splats, materialen en resolutie behouden.",
+  "gallery_update": "Door de linker boog zie je de volledige echte aangrenzende zaal op schaal 1:1, niet langer de kleine voorbeeldkamer met twee vlakke afbeeldingen. Kamera, deur, dak, bank, werken en sokkels sluiten bij doorlopen op elkaar aan.",
   "completed_changes": [
     "Bankje in beide zalen 1,5 vloertegel naar rechts: x -3 naar -0.825 (+2.175 meter). Z -2.8 en rotatie 33 graden behouden.",
     "Twee afzonderlijk bewerkbare marmeren Gaussian-splat sokkels per nis, 1.04 en 0.73 meter hoog. Vierkante bron 620888 splats, circa 2.1 MB gedeeld door beide instanties; ronde editorvariant 551344 splats. Cycles 4K-diffuse materiaalbake op volledig bemonsterde geometrie, inclusief onderkant en afgeronde randen. Afmetingen/positie/kleur en verwijderen blijven bewerkbaar.",
@@ -58,7 +58,11 @@
     "Zaalvoorbereiding bewaart maximaal huidige en volgende bestemming, deelt SOG-bronnen en fitted frames, en hergebruikt de zaalproxy. Geen nieuwe downloads bij geteste herhaalde zaalwissels.",
     "Renderlagen behouden hun identiteit; zes bezoeken blijven op 3 native splatlagen, in plaats van oplopen naar 18. Camera- en schaduwupdates alleen bij gewijzigde camerastand.",
     "Diavoorstelling en handmatige zaalwissels houden de vorige volledige GPU-frame zichtbaar totdat alle onderdelen van de bestemming gerenderd zijn; geen tussentijds laadscherm.",
-    "19 lokale tests geslaagd; GitHub Pages run 40001487791 succesvol. Zaalwissel- en geheugenmetingen staan in room_performance."
+    "19 lokale tests geslaagd; GitHub Pages run 40001487791 succesvol. Zaalwissel- en geheugenmetingen staan in room_performance.",
+    "Echte naastliggende zaal als tweede volledige instantie van dezelfde publieke renderer. Eén gekalibreerde boog, starre rotatie van 180 graden zonder schaalverandering; twee losse voorbeeldafbeeldingen verwijderd. Oude demonstratienis uit de diepteproxy en de zichtbare splats geknipt, goedgekeurde Blenderbron ongewijzigd.",
+    "Doorlopen transporteert camera en kijkrichting met dezelfde transform als de aangrenzende ruimte. De nieuwe camerastand staat al klaar vóór onthullen. Zon en hemel behouden hun wereldoriëntatie bij deze zaalovergang.",
+    "Beide kamers worden bij terugkeer hergebruikt. Expliciete numerieke PlayCanvas-batchIDs voorkomen achterblijvende oude schilderijen en groeiende meshbuffers na opnieuw batchen.",
+    "Openingsbeelden opnieuw vastgelegd voor dag en nacht. Ook wijzigingen in de eerste naastliggende zaal maken het openingsbeeld ongeldig; opname ruimt alle frameworkers en roominstances op."
   ],
   "important_limits": [
     "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",
@@ -67,7 +71,7 @@
     "Sokkels zijn uit Blender-geometrie en een Cycles-materiaalbake omgezette Gaussians, geen uit fotos getraind model. De 4K-bake gebruikt een uitsnede zonder voegen uit de aanwezige CC0 marble_01-bron. Zeg niet dat er nieuwe GPU-training heeft plaatsgevonden. Dag/nacht wordt door de viewer getint; bestaande onverlichte sokkelnis blijft in de nacht donker."
   ],
   "validation_commands": [
-    "node --test --test-isolation=none tools/gallery.test.mjs tools/opening-poster.test.mjs tools/pedestal-splats.test.mjs tools/playcanvas-ready.test.mjs tools/room-performance.test.mjs",
+    "node --test --test-isolation=none tools/gallery-doorway.test.mjs tools/room-performance.test.mjs tools/gallery.test.mjs tools/opening-poster.test.mjs tools/pedestal-splats.test.mjs tools/playcanvas-ready.test.mjs",
     "node tools/build-public.mjs"
   ],
   "room_performance": {
@@ -115,5 +119,56 @@
       "median_frame_ms_after": 5.6
     },
     "limits": "No claim of a major FPS gain or literal zero rendering time. Destination resources are prefetched; last complete frame covers the remaining native scene/sort swap. Cache holds at most two settled destinations except while protecting active/in-flight work."
+  },
+  "doorway_validation": {
+    "tests": 23,
+    "geometry": "Rigid transform and projected work coordinates match across the calibrated doorway. Triangle clipping retains the main side and removes the false annex.",
+    "image_comparison": {
+      "before_after_mean_absolute_rgb_255": 0.53747,
+      "fraction_pixels_difference_over_15": 0.00015191,
+      "note": "Two desktop screenshots from corresponding camera poses, including dynamic sky/shadow variation."
+    },
+    "webgpu_six_visits": {
+      "layer_counts": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "storage_buffer_bytes": 1193709560,
+      "mesh_vertex_bytes_after_warmup": 8744936,
+      "ready_ms_after_initial": [
+        28.4,
+        16.4,
+        18,
+        21.6,
+        17.5
+      ],
+      "median_frame_ms": {
+        "min": 8.5,
+        "max": 8.8
+      },
+      "new_asset_requests_on_switch": 0
+    },
+    "limits": "The real adjacent room has additional per-instance GPU buffers (two rooms versus the previous one-room stand-in). Sources/textures are shared, full detail retained; not a real handset measurement. Native culling and fixed layer identities remain enabled.",
+    "webgl_six_visits": {
+      "ready_ms_after_initial": [
+        36,
+        14.1,
+        20.5,
+        13.9,
+        12.8
+      ],
+      "median_frame_ms": {
+        "min": 6.1,
+        "max": 6.6
+      },
+      "layer_count": 3,
+      "mesh_vertex_bytes_after_warmup": 8744936,
+      "texture_bytes": 1315631088,
+      "new_asset_requests_on_switch": 0
+    }
   }
 }

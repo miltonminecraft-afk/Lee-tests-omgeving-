@@ -2,15 +2,15 @@
 // reveals and beams. The transparent receiver modulates the splat floor color:
 // destination * (1 + sunlight). It preserves the underlying stone detail and
 // introduces no replacement floor texture or per-Gaussian render loop.
-export function createFloorSunlight(pc,app,layers,{enabled=true,mobile=false}={}){
+export function createFloorSunlight(pc,app,layers,{enabled=true,mobile=false,orientation=0}={}){
  const material=new pc.StandardMaterial();material.diffuse.set(1,1,1);material.emissive.set(0,0,0);material.specular.set(0,0,0);material.ambient.set(0,0,0);material.ambientTint=true;material.useSkybox=false;
  material.blendState=new pc.BlendState(true,pc.BLENDEQUATION_ADD,pc.BLENDMODE_DST_COLOR,pc.BLENDMODE_ONE,pc.BLENDEQUATION_ADD,pc.BLENDMODE_ZERO,pc.BLENDMODE_ONE);
  material.depthWrite=false;material.update();
  const receiver=new pc.Entity('Daylight receiver');receiver.addComponent('render',{type:'plane',material,layers:[layers.sunlight.id],castShadows:false,receiveShadows:true});receiver.setPosition(-2,.035,-4);receiver.setLocalScale(36,1,40);app.root.addChild(receiver);receiver.enabled=enabled;
  const sun=new pc.Entity('Skylight sun');sun.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.85),intensity:.45,castShadows:true,shadowType:pc.SHADOW_PCF5,shadowResolution:mobile?1024:2048,shadowDistance:40,numCascades:1,normalOffsetBias:.015,layers:[layers.insideDepth.id,layers.sunlight.id,layers.works.id]});
- sun.setRotation(new pc.Quat().setFromDirections(pc.Vec3.UP,new pc.Vec3(-.4,.75,-.3).normalize()));app.root.addChild(sun);sun.enabled=enabled;
+ sun.setRotation(new pc.Quat().setFromDirections(pc.Vec3.UP,new pc.Vec3(-.4,.75,-.3).normalize()));sun.rotate(0,orientation,0);app.root.addChild(sun);sun.enabled=enabled;
  // Soft reflected room light gives independent objects readable form indoors.
- const bounce=new pc.Entity('Room reflected light');bounce.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.85),intensity:enabled?.45:.12,castShadows:false,layers:[layers.works.id]});bounce.setEulerAngles(48,32,0);app.root.addChild(bounce);
+ const bounce=new pc.Entity('Room reflected light');bounce.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.85),intensity:enabled?.45:.12,castShadows:false,layers:[layers.works.id]});bounce.setEulerAngles(48,32,0);bounce.rotate(0,orientation,0);app.root.addChild(bounce);
  return {sun,receiver,dispose(){bounce.destroy();sun.destroy();receiver.destroy();material.destroy();}};
 }
 

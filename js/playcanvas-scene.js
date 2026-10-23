@@ -1,3 +1,4 @@
+import {GALLERY_DOOR,doorClipPlane,doorDistance,doorwayArrival} from './gallery-doorway.js';
 import {retainPreparedRooms} from './room-preparation-cache.js';
 import * as THREE from '../vendor/three.module.js';
 import {GalleryScene as ConceptScene} from './concept-scene.js';
@@ -61,7 +62,7 @@ export class GalleryScene{
   const path=manifest.relightable?.[room.palette]||manifest.relightable?.approved;
   if(!path)throw Error('Voor deze renderer is nog geen geteste ruimte beschikbaar.');
   const frameUrl=this.frameUrl||url(manifest.nativeSogFrames?.walnut?.[lighting]||'images/splats/frames/walnut-'+lighting+'-detail.sog');
-  const adjacent=nextRoom||previousRoom,works=[...room.works,...(adjacent?.works.slice(0,2)||[])],placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
+  const works=room.works,placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
   const objectSource=item=>manifest.assets[item.asset]?{path:manifest.assets[item.asset].day,type:'gsplat'}:ASSETS[item.asset]?{path:ASSETS[item.asset].url,type:'container'}:null;
   const pedestalSources=(room.pedestals||[]).map(item=>({item,source:pedestalSplatSource(manifest,item)}));
   const keep=new Set([url(path),frameUrl,...pedestalSources.map(p=>url(p.source.day)),...works.map(w=>url(w.src)),...placed.map(p=>{const a=objectSource(p);if(!a)throw Error('Object ontbreekt: '+p.asset);return url(a.path);})]);
@@ -92,9 +93,9 @@ export class GalleryScene{
   return entry.pending;
  }
  trimPreparedRooms(){
-  // Current + one prepared destination. Shared full-detail sources are loaded
-  // once; additional rooms cannot grow resident asset memory indefinitely.
-  retainPreparedRooms(this.preparedRooms,{active:this.activeRoomKey,requested:this.requestedRoomKey});
+  // Keep visible rooms plus one prepared destination. Shared full-detail
+  // sources are loaded once; the rest of a larger gallery can be evicted.
+  retainPreparedRooms(this.preparedRooms,{active:this.activeRoomKey,requested:this.requestedRoomKey,protectedKeys:new Set((this.roomInstances||[]).map(b=>b.prepared.key)),limit:this.roomInstances?.length>1?3:2});
   const keep=new Set([...this.preparedRooms.values()].flatMap(e=>[...e.keep]));
   for(const [url,pending]of this.frameLibraries){
    const entries=[...this.preparedRooms.values()].filter(e=>e.frameUrl===url);
@@ -103,32 +104,23 @@ export class GalleryScene{
   }
   this.engine.retain(keep);
  }
- async loadRoom(room,nextRoom=null,{previousRoom=null}={}){
-  const generation=++this.generation;this.requestedRoomKey=this.roomKey(room,nextRoom,previousRoom);
-  // Keep the current complete room alive while preparing the destination.
-  const prepared=await this.prepareRoom(room,nextRoom,previousRoom);
-  if(generation!==this.generation)return;
-  this.loadingRoom=true;this.presenting=false;this.transition=null;this.navigation.path=[];this.navigation.keys.clear();
+ neighbourArguments(room,current,direction){
+  const index=this.rooms?.findIndex(r=>r.id===room.id)??-1;
+  return index>=0?{nextRoom:this.rooms[index+1]||null,previousRoom:this.rooms[index-1]||null}:direction===1?{nextRoom:null,previousRoom:current}:{nextRoom:current,previousRoom:null};
+ }
+ async buildRoomInstance(prepared,room,{nextRoom=null,previousRoom=null,adjacent=false,connected=false}={}){
   const {manifest,lighting,roomAsset,images,objects,pedestalAssets,frameLibrary}=prepared,{pc,app}=this.engine;
-  this.activeRoomKey=prepared.key;this.lighting=lighting;this.frameLibrary=frameLibrary;
-  this.sunlight?.dispose();this.sunlight=null;this.sky?.dispose();this.sky=null;this.lightProcessor?.destroy();this.lightProcessor=null;
-  for(const entity of this.placed)entity.destroy();this.placed=[];this.fixtures?.dispose();this.fixtures=null;
-  Object.assign(this,{room,nextRoom,previousRoom});this.onInspect(null);this.inspected=null;
-  this.fixtures=await galleryObjects(pc,app,room,images,{nextRoom,previousRoom});
-  const {layout,layers}=this.fixtures;
-
-  this.sunlight=createFloorSunlight(pc,app,layers,{enabled:this.lighting==='day',mobile:this.mobile});this.lastCameraPose=null;
-  this.sky=createPlayCanvasSky(pc,app,layers.sky);this.sky.update(this.lighting==='night'?{cloudCover:8,sunDirection:[.4,-.5,-.3],brightness:.8}:{});
-  for(const name of ['layout','world','walls','floor','workGroups','clickables'])this[name]=layout[name];
-  this.renderCamera.camera.layers=Object.values(layers).map(l=>l.id);
-  const roomEntity=this.engine.add('Complete gallery',roomAsset);roomEntity.gsplat.layers=[layers.room.id];this.placed.push(roomEntity);
-  this.expectedSplats=roomAsset.resource.numSplats+objects.reduce((sum,entry)=>sum+(entry.type==='gsplat'?entry.asset.resource.numSplats:0),0);
-  this.lightProcessor=cacheRoomLighting(pc,app,roomEntity,roomAsset,this.fixtures.sources,{ambient:this.lighting==='night'?.16:1});
-  app.scene.ambientLight.set(this.lighting==='night'?.14:.72,this.lighting==='night'?.14:.72,this.lighting==='night'?.16:.72);
+  const parent=new pc.Entity(room.id+' full room');
+  if(adjacent){parent.setPosition(GALLERY_DOOR.x*2,0,GALLERY_DOOR.z*2);parent.setEulerAngles(0,180,0);}
+  app.root.addChild(parent);
+  const fixtures=await galleryObjects(pc,app,room,images,{nextRoom,previousRoom,parent,connected}),{layers}=fixtures;
+  const roomEntity=this.engine.add(room.id+' architecture',roomAsset,{parent});roomEntity.gsplat.layers=[layers.room.id];
+  let expectedSplats=roomAsset.resource.numSplats+objects.reduce((sum,entry)=>sum+(entry.type==='gsplat'?entry.asset.resource.numSplats:0),0);
+  const lightProcessor=cacheRoomLighting(pc,app,roomEntity,roomAsset,fixtures.sources,{ambient:lighting==='night'?.16:1,clipPlane:connected?doorClipPlane():null});
   for(const {item,source,asset}of pedestalAssets){
-   const pose=pedestalTransform(item,source),root=new pc.Entity(item.id+' stone splat');root.setPosition(...pose.position);root.setLocalScale(...pose.scale);root.setEulerAngles(0,pose.rotation,0);app.root.addChild(root);this.placed.push(root);
-   const object=this.engine.add(item.id,asset,{parent:root});object.gsplat.layers=[layers.objects.id];object.gsplat.setWorkBufferModifier(pedestalColorModifier(item.color,this.lighting));object.gsplat.workBufferUpdate=pc.WORKBUFFER_UPDATE_ONCE;
-   this.expectedSplats+=asset.resource.numSplats;
+   const pose=pedestalTransform(item,source),root=new pc.Entity(item.id+' stone splat');root.setPosition(...pose.position);root.setLocalScale(...pose.scale);root.setEulerAngles(0,pose.rotation,0);parent.addChild(root);
+   const object=this.engine.add(item.id,asset,{parent:root});object.gsplat.layers=[layers.objects.id];object.gsplat.setWorkBufferModifier(pedestalColorModifier(item.color,lighting));object.gsplat.workBufferUpdate=pc.WORKBUFFER_UPDATE_ONCE;
+   expectedSplats+=asset.resource.numSplats;
   }
   for(const {item,asset,type}of objects){
    if(type==='container'){
@@ -137,28 +129,74 @@ export class GalleryScene{
     const renders=model.findComponents('render'),bounds=new pc.BoundingBox();let first=true;
     for(const render of renders)for(const instance of render.meshInstances){if(first){bounds.copy(instance.aabb);first=false;}else bounds.add(instance.aabb);}
     const scale=item.height/(bounds.halfExtents.y*2),root=new pc.Entity(item.id);
-    app.root.addChild(root);root.addChild(model);model.setLocalPosition(-bounds.center.x,-bounds.center.y+bounds.halfExtents.y,-bounds.center.z);
-    root.setLocalScale(scale,scale,scale);root.setPosition(item.x,item.y||0,item.z);root.setEulerAngles(0,item.rotation||0,0);this.placed.push(root);continue;
+    parent.addChild(root);root.addChild(model);model.setLocalPosition(-bounds.center.x,-bounds.center.y+bounds.halfExtents.y,-bounds.center.z);
+    root.setLocalScale(scale,scale,scale);root.setLocalPosition(item.x,item.y||0,item.z);root.setLocalEulerAngles(0,item.rotation||0,0);continue;
    }
-   const root=new pc.Entity(item.id),scale=item.height/manifest.assets[item.asset].nativeHeight;root.setPosition(item.x,item.y||0,item.z);root.setEulerAngles(0,item.rotation||0,0);root.setLocalScale(scale,scale,scale);app.root.addChild(root);this.placed.push(root);
+   const root=new pc.Entity(item.id),scale=item.height/manifest.assets[item.asset].nativeHeight;root.setPosition(item.x,item.y||0,item.z);root.setEulerAngles(0,item.rotation||0,0);root.setLocalScale(scale,scale,scale);parent.addChild(root);
    const object=this.engine.add(item.id,asset,{parent:root});object.gsplat.layers=[(room.trees||[]).includes(item)?layers.outside.id:layers.objects.id];
-   if(this.lighting==='night'&&manifest.assets[item.asset].nightFallback)object.gsplat.setWorkBufferModifier({glsl:'void modifySplatCenter(inout vec3 c){} void modifySplatRotationScale(vec3 a,vec3 b,inout vec4 r,inout vec3 s){} void modifySplatColor(vec3 c,inout vec4 color){color.rgb*=vec3(.10,.13,.20);}',wgsl:'fn modifySplatCenter(c:ptr<function,vec3f>){} fn modifySplatRotationScale(a:vec3f,b:vec3f,r:ptr<function,vec4f>,s:ptr<function,vec3f>){} fn modifySplatColor(c:vec3f,color:ptr<function,vec4f>){*color=vec4f((*color).rgb*vec3f(.10,.13,.20),(*color).a);}'});
+   if(lighting==='night'&&manifest.assets[item.asset].nightFallback)object.gsplat.setWorkBufferModifier({glsl:'void modifySplatCenter(inout vec3 c){} void modifySplatRotationScale(vec3 a,vec3 b,inout vec4 r,inout vec3 s){} void modifySplatColor(vec3 c,inout vec4 color){color.rgb*=vec3(.10,.13,.20);}',wgsl:'fn modifySplatCenter(c:ptr<function,vec3f>){} fn modifySplatRotationScale(a:vec3f,b:vec3f,r:ptr<function,vec4f>,s:ptr<function,vec3f>){} fn modifySplatColor(c:vec3f,color:ptr<function,vec4f>){*color=vec4f((*color).rgb*vec3f(.10,.13,.20),(*color).a);}'});
   }
   const activeFrameKeys=new Set();
   await Promise.all(room.works.map(async work=>{
-   const group=this.workGroups.get(work.id),{asset,fit,key}=await this.frameLibrary.load('walnut',group.userData.paintingSize,work.frame);
+   const group=fixtures.layout.workGroups.get(work.id),{asset,fit,key}=await frameLibrary.load('walnut',group.userData.paintingSize,work.frame);
    activeFrameKeys.add(key);
-   const root=new pc.Entity(work.id+' frame');root.setPosition(...group.position.toArray());root.setEulerAngles(0,group.rotation.y*180/Math.PI,0);app.root.addChild(root);this.placed.push(root);
+   const root=new pc.Entity(work.id+' frame');root.setPosition(...group.position.toArray());root.setEulerAngles(0,group.rotation.y*180/Math.PI,0);parent.addChild(root);
    const frame=this.engine.add(work.id,asset,{parent:root});frame.setLocalPosition(0,-fit.nativeHeight/2-fit.nativeBorder,fit.nativeDepth/2);frame.gsplat.layers=[layers.objects.id];
-   this.expectedSplats+=asset.resource.numSplats;
+   expectedSplats+=asset.resource.numSplats;
   }));
+
+  for(const asset of [roomAsset,...objects.map(o=>o.asset),...pedestalAssets.map(o=>o.asset),frameLibrary.source])asset.resource.releaseTextureSources?.();
+  return {root:parent,fixtures,lightProcessor,expectedSplats,prepared};
+ }
+ async loadRoom(room,nextRoom=null,{previousRoom=null}={}){
+  const generation=++this.generation;this.requestedRoomKey=this.roomKey(room,nextRoom,previousRoom);
+  const adjacentRoom=nextRoom||previousRoom,neighbours=adjacentRoom?this.neighbourArguments(adjacentRoom,room,nextRoom?1:-1):null;
+  const [prepared,adjacentPrepared]=await Promise.all([this.prepareRoom(room,nextRoom,previousRoom),adjacentRoom?this.prepareRoom(adjacentRoom,neighbours.nextRoom,neighbours.previousRoom):null]);
+  if(generation!==this.generation)return;
+  this.loadingRoom=true;this.presenting=false;this.transition=null;this.navigation.path=[];this.navigation.keys.clear();
+  const {lighting,frameLibrary}=prepared,{pc,app}=this.engine;
+  this.activeRoomKey=prepared.key;this.lighting=lighting;this.frameLibrary=frameLibrary;
+  this.sunlight?.dispose();this.sunlight=null;this.sky?.dispose();this.sky=null;
+  const desired=[prepared,...adjacentPrepared?[adjacentPrepared]:[]];
+  const previousInstances=this.roomInstances||[];
+  const reusable=previousInstances.length===desired.length&&desired.every(p=>previousInstances.some(b=>b.prepared.key===p.key));
+  Object.assign(this,{room,nextRoom,previousRoom});this.onInspect(null);this.inspected=null;
+  let active;
+  if(reusable){
+   // Both sides are already complete. Exchange their coordinate frames rather
+   // than rebuilding geometry, frames, materials and per-room light streams.
+   this.roomInstances=desired.map(p=>previousInstances.find(b=>b.prepared.key===p.key));
+   for(const [i,bundle]of this.roomInstances.entries()){
+    bundle.root.setPosition(i?GALLERY_DOOR.x*2:0,0,i?GALLERY_DOOR.z*2:0);bundle.root.setEulerAngles(0,i?180:0,0);
+   }
+   app.batcher.generate(this.roomInstances.flatMap(b=>b.fixtures.batchIds));active=this.roomInstances[0];
+  }else{
+   for(const bundle of previousInstances){bundle.lightProcessor.destroy();bundle.fixtures.dispose();bundle.root.destroy();}
+   this.roomInstances=[];this.placed=[];
+   active=await this.buildRoomInstance(prepared,room,{nextRoom,previousRoom,connected:!!adjacentRoom});this.roomInstances.push(active);
+   if(adjacentPrepared)this.roomInstances.push(await this.buildRoomInstance(adjacentPrepared,adjacentRoom,{...neighbours,adjacent:true,connected:true}));
+  }
+  this.fixtures=active.fixtures;const {layout,layers}=this.fixtures;
+  this.placed=this.roomInstances.map(b=>b.root);this.expectedSplats=this.roomInstances.reduce((n,b)=>n+b.expectedSplats,0);
+  const orientation=Math.max(0,this.rooms?.findIndex(r=>r.id===room.id)||0)%2*180;
+  this.sunlight=createFloorSunlight(pc,app,layers,{enabled:lighting==='day',mobile:this.mobile,orientation});this.lastCameraPose=null;
+  this.sky=createPlayCanvasSky(pc,app,layers.sky);this.sky.update(lighting==='night'?{cloudCover:8,sunDirection:[.4,-.5,-.3],brightness:.8}:{});this.sky.mesh.setLocalEulerAngles(0,orientation,0);
+  app.scene.ambientLight.set(lighting==='night'?.14:.72,lighting==='night'?.14:.72,lighting==='night'?.16:.72);
+  for(const name of ['layout','world','walls','floor','workGroups','clickables'])this[name]=layout[name];
+  this.renderCamera.camera.layers=Object.values(layers).map(l=>l.id);
   this.splatLayers=new Set(this.placed.flatMap(entity=>entity.findComponents('gsplat').flatMap(component=>component.layers)));
-  this.trimPreparedRooms();
-  // Native PlayCanvas memory release, also used by its octree loader. The GPU
-  // texture stays intact; decoded ImageBitmaps are no longer needed after upload.
-  // Delay until frame decoding has finished. Device loss already shows retry UI.
-  for(const asset of [roomAsset,...objects.map(o=>o.asset),...pedestalAssets.map(o=>o.asset),this.frameLibrary.source])asset.resource.releaseTextureSources?.();
-  this.world.updateMatrixWorld(true);this.requestedRoomKey=null;this.loadingRoom=false;this.enteringRoom=false;
+  this.trimPreparedRooms();this.world.updateMatrixWorld(true);this.requestedRoomKey=null;this.loadingRoom=false;this.enteringRoom=false;
+ }
+ portalArrival(){
+  return {...doorwayArrival(this.camera.position.toArray(),this.controls.target.toArray(),{walking:this.crossingDoor===true}),fov:this.camera.fov};
+ }
+ checkPortal(){
+  if(this.loadingRoom||this.enteringRoom||!this.room)return;
+  const p=this.camera.position;
+  if(doorDistance(p.x,p.z)<-.12&&Math.abs(p.z-GALLERY_DOOR.z)<GALLERY_DOOR.radius){
+   const direction=this.nextRoom?1:this.previousRoom?-1:0;
+   if(direction){this.enteringRoom=true;this.crossingDoor=true;this.onPortal(direction);this.crossingDoor=false;}
+  }
  }
  tick(){
   const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost;
@@ -192,6 +230,13 @@ export class GalleryScene{
   if(this.contextLost)throw Error('De 3D-weergave is onderbroken.');
   this.readyReport=await waitForSplatFrame(this.app,{camera:this.renderCamera.camera,layers:this.splatLayers,expectedSplats:this.expectedSplats});
   this.presenting=true;
+ }
+ async dispose(){
+  this.generation++;this.contextLost=true;this.presenting=false;this.resizeObserver?.disconnect();
+  this.sunlight?.dispose();this.sky?.dispose();
+  for(const bundle of this.roomInstances||[]){bundle.lightProcessor.destroy();bundle.fixtures.dispose();bundle.root.destroy();}
+  await Promise.all([...this.frameLibraries.values()].map(pending=>pending.then(l=>l.dispose(),()=>{})));
+  this.frameLibraries.clear();this.preparedRooms.clear();this.engine?.dispose();
  }
  resize(){
   const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;
