@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-10-23T15:02:05.176617+00:00",
+  "updated_at": "2026-10-23T15:07:24.598666+00:00",
   "task": "Koppel de bestaande geoptimaliseerde Lee Mobero-galerij aan leemobero.com en controleer HTTPS en de 3D-weergave.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
   "public_branch": "main",
   "release_branch": "release/gallery-update",
   "current_public_site": "https://miltonminecraft-afk.github.io/Lee-tests-omgeving-/",
-  "verified_gallery_commit": "ab51032bcc2713b88b29472589998ca151cc08d7",
-  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/39962654846",
+  "verified_gallery_commit": "8a0b8a0d42fbdb55e12e3333e4acbf2b7cecfce2",
+  "successful_deployment": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-/actions/runs/39975147459",
   "status": "Galerij gepubliceerd en visueel gecontroleerd. Domeinkoppeling nog niet gewijzigd; wacht op ingelogde Cloudflare-sessie op de MacBook.",
   "dns_provider": "Cloudflare",
   "registrar_reported_by_user": "TransIP",
@@ -56,7 +56,7 @@
     "Bij openen direct een klein WebP-beeld van het eerste geplaatste schilderij. Pas na volledige 3D-load vervaagt het beeld en beweegt de camera in 4.2 seconden rustig naar het overzicht. Autoplay start 10 seconden na laden.",
     "Aparte dag- en nachtbeelden; dezelfde lichtstand als de 3D-zaal. Bij Publiceer in de lokale editor worden beide beelden opnieuw opgenomen met de publieke renderer. Een inhoudssignatuur voorkomt gebruik van een verouderd beeld na wijzigingen.",
     "Geen beheerknoppen op de publieke website. Beheerserver en opnamepagina blijven achter authenticatie; opname-iframe uitsluitend dezelfde origin.",
-    "11 lokale tests geslaagd; GitHub Pages-build en publicatie geslaagd; live openingsbeeld en geladen zaal met bankje/sokkels gecontroleerd zonder browserfouten."
+    "16 lokale tests geslaagd; GitHub Pages-build en publicatie geslaagd; WebGPU close-up dag en WebGL op mobiel schermformaat gecontroleerd zonder browserfouten. Geen echte handsetmeting."
   ],
   "important_limits": [
     "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",
