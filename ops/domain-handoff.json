@@ -62,7 +62,8 @@
     "Echte naastliggende zaal als tweede volledige instantie van dezelfde publieke renderer. Eén gekalibreerde boog, starre rotatie van 180 graden zonder schaalverandering; twee losse voorbeeldafbeeldingen verwijderd. Oude demonstratienis uit de diepteproxy en de zichtbare splats geknipt, goedgekeurde Blenderbron ongewijzigd.",
     "Doorlopen transporteert camera en kijkrichting met dezelfde transform als de aangrenzende ruimte. De nieuwe camerastand staat al klaar vóór onthullen. Zon en hemel behouden hun wereldoriëntatie bij deze zaalovergang.",
     "Beide kamers worden bij terugkeer hergebruikt. Expliciete numerieke PlayCanvas-batchIDs voorkomen achterblijvende oude schilderijen en groeiende meshbuffers na opnieuw batchen.",
-    "Openingsbeelden opnieuw vastgelegd voor dag en nacht. Ook wijzigingen in de eerste naastliggende zaal maken het openingsbeeld ongeldig; opname ruimt alle frameworkers en roominstances op."
+    "Openingsbeelden opnieuw vastgelegd voor dag en nacht. Ook wijzigingen in de eerste naastliggende zaal maken het openingsbeeld ongeldig; opname ruimt alle frameworkers en roominstances op.",
+    "Sokkels in beide zalen uitgelijnd met het bestaande tegelraster: x 2.90 en 4.06, z -8.675, rotatie 0 graden; elk midden op een tegel, dezelfde rij. Hoogtes, breedte en splatmaterialen behouden. Dag/nacht-openingsbeelden opnieuw opgenomen."
   ],
   "important_limits": [
     "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",

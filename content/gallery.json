@@ -13,28 +13,28 @@
         {
           "id": "portraits-alcove-plinth-1",
           "title": "Sokkel 1",
-          "x": 2.9205,
-          "z": -8.0403,
+          "x": 2.9,
+          "z": -8.675,
           "height": 1.04,
           "width": 0.66,
           "shape": "square",
           "color": "#d5c5ac",
           "model": null,
           "modelHeight": 0.65,
-          "rotation": 18
+          "rotation": 0
         },
         {
           "id": "portraits-alcove-plinth-2",
           "title": "Sokkel 2",
-          "x": 4.2174,
-          "z": -7.9869,
+          "x": 4.06,
+          "z": -8.675,
           "height": 0.73,
           "width": 0.66,
           "shape": "square",
           "color": "#d5c5ac",
           "model": null,
           "modelHeight": 0.65,
-          "rotation": 18
+          "rotation": 0
         }
       ],
       "plants": [],
@@ -193,28 +193,28 @@
         {
           "id": "ceramics-alcove-plinth-1",
           "title": "Sokkel 1",
-          "x": 2.9205,
-          "z": -8.0403,
+          "x": 2.9,
+          "z": -8.675,
           "height": 1.04,
           "width": 0.66,
           "shape": "square",
           "color": "#d5c5ac",
           "model": null,
           "modelHeight": 0.65,
-          "rotation": 18
+          "rotation": 0
         },
         {
           "id": "ceramics-alcove-plinth-2",
           "title": "Sokkel 2",
-          "x": 4.2174,
-          "z": -7.9869,
+          "x": 4.06,
+          "z": -8.675,
           "height": 0.73,
           "width": 0.66,
           "shape": "square",
           "color": "#d5c5ac",
           "model": null,
           "modelHeight": 0.65,
-          "rotation": 18
+          "rotation": 0
         }
       ],
       "plants": [],
