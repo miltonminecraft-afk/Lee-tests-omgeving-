@@ -19,6 +19,14 @@
           "z": -2.8,
           "height": 0.48,
           "rotation": 33
+        },
+        {
+          "id": "portraits-coffee-table",
+          "asset": "modern_coffee_table_01",
+          "x": -4.48,
+          "z": -4.02,
+          "height": 0.39,
+          "rotation": 356
         }
       ],
       "trees": [
@@ -43,7 +51,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -57,7 +65,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -71,7 +79,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -85,7 +93,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -99,7 +107,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -113,7 +121,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -127,7 +135,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -141,7 +149,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         }
       ]
@@ -188,7 +196,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -202,7 +210,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         },
         {
@@ -216,7 +224,7 @@
             "color": "#543b2d",
             "width": 3,
             "depth": 5,
-            "mat": 2
+            "mat": 0
           }
         }
       ]

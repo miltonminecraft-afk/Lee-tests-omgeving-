@@ -5,6 +5,7 @@ import {gunzipSync} from 'node:zlib';
 import {ASSETS} from '../js/assets.js';
 import {compactProxy} from './compact-splat-proxy.mjs';
 import {decodeSplatIndices,validateSplatCells} from '../js/splat-spatial-data.js';
+import {buildSplatRevisions} from './splat-revisions.mjs';
 const root=path.resolve(import.meta.dirname,'..'),candidate=process.argv.includes('--candidate');
 const dist=path.join(root,candidate?'.local/release-candidate-dist':'dist');
 if(dist!==path.join(root,'dist')&&dist!==path.join(root,'.local','release-candidate-dist'))throw Error('Invalid output directory');
@@ -28,6 +29,7 @@ function collectSplatFiles(value){
  else if(value&&typeof value==='object')for(const child of Object.values(value))collectSplatFiles(child);
 }
 collectSplatFiles(splats);
+splats.assetRevisions=await buildSplatRevisions(root,splatFiles);
 for(const config of Object.values(splats.roomSpatial||{})){
  const metadata=JSON.parse(await fs.readFile(path.join(root,config.metadata),'utf8'));validateSplatCells(metadata);
  if(metadata.sha256!==createHash('sha256').update(await fs.readFile(path.join(root,config.source))).digest('hex'))throw Error('Spatial index does not match its source');
@@ -76,7 +78,8 @@ for(const name of modules){
  await fs.writeFile(file,versioned);
 }
 const index=path.join(dist,'index.html');
-await fs.writeFile(index,(await fs.readFile(index,'utf8')).replace(/(src=["']js\/public\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`));
+const preloads=[`js/playcanvas-scene.js?v=${revision}`,`vendor/playcanvas/playcanvas.mjs`,'vendor/three.module.js'].map(url=>`<link rel="modulepreload" href="${url}">`).join('');
+await fs.writeFile(index,(await fs.readFile(index,'utf8')).replace(/(src=["']js\/public\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`).replace('</head>',preloads+'</head>'));
 await fs.writeFile(path.join(dist,'.nojekyll'),'');
 async function size(folder){let total=0;for(const file of await fs.readdir(folder,{withFileTypes:true})){const target=path.join(folder,file.name);total+=file.isDirectory()?await size(target):(await fs.stat(target)).size;}return total;}
 const bytes=await size(dist);if(bytes>=1e9)throw Error('Public build exceeds the Pages size limit');

@@ -1,19 +1,4 @@
 {
-  "revision": "dense-four-million-20261023",
-  "rooms": {
-    "approved": {
-      "day": "images/splats/rooms/approved-day.spz",
-      "night": "images/splats/rooms/approved-night.spz"
-    },
-    "ivory": {
-      "day": "images/splats/rooms/ivory-day.spz",
-      "night": "images/splats/rooms/ivory-night.spz"
-    },
-    "greige": {
-      "day": "images/splats/rooms/greige-day.spz",
-      "night": "images/splats/rooms/greige-night.spz"
-    }
-  },
   "assets": {
     "concept_bench": {
       "nativeHeight": 0.48,
@@ -35,26 +20,16 @@
     }
   },
   "relightable": {
-    "approved": "images/splats/rooms/approved-neutral-four-million.sog"
-  },
-  "roomPrecision": "extended",
-  "accumulationPrecision": "packed",
-  "frames": {
-    "walnut": {
-      "day": "images/splats/frames/walnut-day-detail.spz",
-      "night": "images/splats/frames/walnut-night-detail.spz",
-      "lodDay": "images/splats/frames/walnut-day-detail-lod.spz",
-      "lodNight": "images/splats/frames/walnut-night-detail-lod.spz"
-    }
+    "approved": "images/splats/rooms/approved-neutral-six-million.sog",
+    "ivory": "images/splats/rooms/ivory-neutral-six-million.sog"
   },
   "proxy": "images/splats/room-proxy-compact.glb",
-  "frameLodMinWorks": 12,
-  "roomSpatial": {
-    "approved": {
-      "source": "images/splats/rooms/approved-neutral-four-million.sog",
-      "metadata": "images/splats/rooms/approved-four-million-grid.json",
-      "indices": "images/splats/rooms/approved-four-million-grid.indices.gz"
+  "nativeSog": true,
+  "nativeSogFrames": {
+    "walnut": {
+      "day": "images/splats/frames/walnut-day-detail.sog",
+      "night": "images/splats/frames/walnut-night-detail.sog"
     }
   },
-  "nativeSog": true
+  "revision": "native-playcanvas-optimized-20261023"
 }
