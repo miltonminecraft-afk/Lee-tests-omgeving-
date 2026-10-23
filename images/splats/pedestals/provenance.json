@@ -1,0 +1,60 @@
+{
+  "source": "https://polyhaven.com/a/marble_01",
+  "license": "CC0",
+  "sourceTextureResolution": 4096,
+  "bakeResolution": 4096,
+  "renderer": "Blender Cycles OptiX",
+  "samples": 96,
+  "method": "Surface conversion of complete beveled geometry with baked diffuse stone material. Not photo-trained splats.",
+  "objects": {
+    "square": {
+      "count": 620888,
+      "bounds": [
+        [
+          -0.3300000131130219,
+          -0.3300000131130219,
+          0.0
+        ],
+        [
+          0.3300000131130219,
+          0.3300000131130219,
+          1.0399999618530276
+        ]
+      ],
+      "spacing": 0.0024,
+      "source": "Poly Haven marble_01 CC0",
+      "method": "Cycles diffuse bake to complete surface Gaussians",
+      "bakeResolution": 4096,
+      "samples": 96,
+      "shape": "square"
+    },
+    "round": {
+      "count": 551344,
+      "bounds": [
+        [
+          -0.32999999720541484,
+          -0.32999999720541484,
+          0.0
+        ],
+        [
+          0.32999999720541484,
+          0.32999999720541484,
+          1.0399999618530276
+        ]
+      ],
+      "spacing": 0.0024,
+      "source": "Poly Haven marble_01 CC0",
+      "method": "Cycles diffuse bake to complete surface Gaussians",
+      "bakeResolution": 4096,
+      "samples": 96,
+      "shape": "round"
+    }
+  },
+  "nativeDimensionsMeters": [
+    0.66,
+    0.66,
+    1.04
+  ],
+  "reproduce": "Blender --background --factory-startup --python tools/build-pedestal-splats.py; convert resulting PLY with PlayCanvas splat-transform to SOG.",
+  "approvedGalleryBlendModified": false
+}

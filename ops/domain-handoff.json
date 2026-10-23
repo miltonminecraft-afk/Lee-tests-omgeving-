@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-23T13:41:43.025546+00:00",
+  "updated_at": "2026-10-23T15:02:05.176617+00:00",
   "task": "Koppel de bestaande geoptimaliseerde Lee Mobero-galerij aan leemobero.com en controleer HTTPS en de 3D-weergave.",
   "confirmed_domain": "leemobero.com",
   "repository": "https://github.com/miltonminecraft-afk/Lee-tests-omgeving-",
@@ -49,10 +49,10 @@
     "De algemene kwaliteitswensen voor muren/vloeren zijn nog niet allemaal opgelost. Deze taak is de domeinkoppeling, geen claim dat alle kwaliteitswerk klaar is."
   ],
   "mac_prompt": "Lees in GitHub-repository miltonminecraft-afk/Lee-tests-omgeving- op main het bestand ops/domain-handoff.json. Neem de actuele galerij en daarin vastgelegde wijzigingen over. Maak daarna via mijn ingelogde Cloudflare en GitHub de koppeling naar leemobero.com af, behoud de huidige inrichting en controleer HTTPS, openingsbeeld en complete 3D-zaal. Start geen achtergrondtraining.",
-  "gallery_update": "Actuele main bevat het gecontroleerde openingsbeeld, bankje en sokkels. De commit hierboven is de gecontroleerde websiteversie; latere overdrachtscommits wijzigen alleen instructies.",
+  "gallery_update": "Deze release vervangt de afgekeurde effen mesh-sokkels door zelfstandige marmeren SOG-splats. Bankpositie, zaalontwerp en bestaande werken blijven behouden. Zie images/splats/pedestals/provenance.json voor exacte herkomst en techniek.",
   "completed_changes": [
     "Bankje in beide zalen 1,5 vloertegel naar rechts: x -3 naar -0.825 (+2.175 meter). Z -2.8 en rotatie 33 graden behouden.",
-    "Twee afzonderlijk verplaatsbare/verwijderbare sokkels per sokkelruimte: 1.04 en 0.73 meter hoog, 0.66 meter breed; posities volgen het goedgekeurde Blenderontwerp.",
+    "Twee afzonderlijk bewerkbare marmeren Gaussian-splat sokkels per nis, 1.04 en 0.73 meter hoog. Vierkante bron 620888 splats, circa 2.1 MB gedeeld door beide instanties; ronde editorvariant 551344 splats. Cycles 4K-diffuse materiaalbake op volledig bemonsterde geometrie, inclusief onderkant en afgeronde randen. Afmetingen/positie/kleur en verwijderen blijven bewerkbaar.",
     "Bij openen direct een klein WebP-beeld van het eerste geplaatste schilderij. Pas na volledige 3D-load vervaagt het beeld en beweegt de camera in 4.2 seconden rustig naar het overzicht. Autoplay start 10 seconden na laden.",
     "Aparte dag- en nachtbeelden; dezelfde lichtstand als de 3D-zaal. Bij Publiceer in de lokale editor worden beide beelden opnieuw opgenomen met de publieke renderer. Een inhoudssignatuur voorkomt gebruik van een verouderd beeld na wijzigingen.",
     "Geen beheerknoppen op de publieke website. Beheerserver en opnamepagina blijven achter authenticatie; opname-iframe uitsluitend dezelfde origin.",
@@ -62,10 +62,11 @@
     "De nieuwe startafbeelding verkort de tijd tot zichtbaar beeld, niet de volledige 3D-download; geen nieuwe FPS- of mobiele-hardwareprestatieclaim.",
     "Publiceer in de lokale editor schrijft content/gallery.json, content/opening.json en de bijbehorende images/opening/*.webp. De online Pages-site verandert pas na commit/push en deployment van deze bestanden.",
     "Volledige .blend-bronnen, GPU-trainingsdata en lokale browseraanmeldingen zijn geen onderdeel van deze overdracht. Niet beweren dat deze op de Mac beschikbaar zijn.",
-    "Cloudflare-domeinkoppeling is nog niet uitgevoerd. Controleer bestaande records en huidige live-site voordat iets wijzigt."
+    "Cloudflare-domeinkoppeling is nog niet uitgevoerd. Controleer bestaande records en huidige live-site voordat iets wijzigt.",
+    "Sokkels zijn uit Blender-geometrie en een Cycles-materiaalbake omgezette Gaussians, geen uit fotos getraind model. De 4K-bake gebruikt een uitsnede zonder voegen uit de aanwezige CC0 marble_01-bron. Zeg niet dat er nieuwe GPU-training heeft plaatsgevonden. Dag/nacht wordt door de viewer getint; bestaande onverlichte sokkelnis blijft in de nacht donker."
   ],
   "validation_commands": [
-    "node --test tools/gallery.test.mjs tools/opening-poster.test.mjs",
+    "node --test tools/gallery.test.mjs tools/opening-poster.test.mjs tools/pedestal-splats.test.mjs tools/playcanvas-ready.test.mjs",
     "node tools/build-public.mjs"
   ]
 }

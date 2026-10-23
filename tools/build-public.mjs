@@ -23,6 +23,8 @@ for(const room of gallery.rooms){for(const item of [...room.furniture||[],...roo
 // build needs only objects actually placed in a gallery, plus its room variants.
 const placedAssets=new Set(gallery.rooms.flatMap(room=>[...room.furniture||[],...room.plants||[],...room.trees||[]].map(item=>item.asset)));
 const frameStyles=new Set(gallery.rooms.flatMap(room=>room.works.map(work=>work.frame?.material)));
+const pedestalShapes=new Set(gallery.rooms.flatMap(room=>(room.pedestals||[]).map(p=>p.shape==='round'?'round':'square')));
+if(splats.pedestals)splats.pedestals=Object.fromEntries(Object.entries(splats.pedestals).filter(([shape])=>pedestalShapes.has(shape)));
 splats.assets=Object.fromEntries(Object.entries(splats.assets||{}).filter(([id])=>placedAssets.has(id)));
 if(splats.frames){splats.frames=Object.fromEntries(Object.entries(splats.frames).filter(([id])=>frameStyles.has(id)));if(!Object.keys(splats.frames).length)delete splats.frames;}
 const splatFiles=new Set([splats.proxy||'images/splats/room-proxy.glb']);
@@ -51,6 +53,7 @@ for(const name of ['index.html','images','js','styles','vendor','content'])await
  const relative=path.relative(root,source).replaceAll('\\','/'),parts=relative.split('/');
  if(relative.endsWith('.before-concept.json')||relative.endsWith('.download'))return false;
  if(parts[0]==='images'&&parts[1]==='studio')return false;
+ if(parts[0]==='images'&&parts[1]==='pedestals')return false; // private editor previews; visitors load packed SOG only
  if(parts[0]==='images'&&parts[1]==='opening'&&parts[2]&&!openingFiles.has(relative))return false;
  if(relative==='images/models/gallery-concept/room.glb'||relative==='images/models/concept_bench/bench.glb')return false;
  if(parts[0]==='images'&&parts[1]==='models'&&parts[2]&&!models.has(parts[2]))return false;

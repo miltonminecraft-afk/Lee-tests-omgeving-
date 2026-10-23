@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {pedestalMaterial} from './pedestal-material.js';
 import {WalkNavigation} from './navigation.js?v=doors-touch-20261022';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {MATERIALS} from './model.js';
@@ -169,9 +170,11 @@ export class GalleryScene {
   label(text){const c=document.createElement('canvas');c.width=512;c.height=64;const ctx=c.getContext('2d');ctx.fillStyle='#524d43';ctx.font='20px Arial';ctx.fillText(text,8,40);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.userData.owned=true;return new THREE.Mesh(new THREE.PlaneGeometry(.62,.078),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));}
   updateWork(work){const t=this.texCache.get(work.src);if(t)this.buildWork(work,t);}
   async buildPedestal(p,gen=this.generation){
+      this.pedestalBuilds??=new Map();const revision=Symbol();this.pedestalBuilds.set(p.id,revision);
     const old=this.pedestalGroups.get(p.id);if(old){this.clickables=this.clickables.filter(o=>o!==old);this.disposeGroup(old);}
-    const g=new THREE.Group();g.position.set(p.x,0,p.z);g.userData.select={type:'pedestal',id:p.id};
-    const mat=this.library.material('plaster',{color:p.color,roughness:.72});
+    const g=new THREE.Group();g.position.set(p.x,0,p.z);g.rotation.y=(p.rotation||0)*Math.PI/180;g.userData.select={type:'pedestal',id:p.id};
+      const mat=this.pedestalProxyOnly?new THREE.MeshBasicMaterial():await pedestalMaterial(p.color);
+      if(gen!==this.generation||this.pedestalBuilds.get(p.id)!==revision){for(const value of Object.values(mat))if(value?.isTexture&&value.userData.owned)value.dispose();mat.dispose();return;}
     const base=new THREE.Mesh(p.shape==='round'?new THREE.CylinderGeometry(p.width/2,p.width/2,p.height,64):new RoundedBoxGeometry(p.width,p.height,p.width,3,.018),mat);base.position.y=p.height/2;base.castShadow=base.receiveShadow=true;g.add(base);
     this.world.add(g);this.pedestalGroups.set(p.id,g);this.clickables.push(g);
     if(p.model)try{
@@ -182,7 +185,7 @@ export class GalleryScene {
       const bounds=new THREE.Box3().setFromObject(model.scene),size=bounds.getSize(new THREE.Vector3());
       if(size.y<=0)throw Error('Geen zichtbaar model.');const scale=p.modelHeight/size.y;model.scene.scale.setScalar(scale);
       const center=bounds.getCenter(new THREE.Vector3());model.scene.position.set(-center.x*scale,p.height-bounds.min.y*scale,-center.z*scale);
-      const holder=new THREE.Group();holder.rotation.y=p.rotation*Math.PI/180;holder.add(model.scene);g.add(holder);model.scene.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});
+      const holder=new THREE.Group();holder.add(model.scene);g.add(holder);model.scene.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});
     }catch{this.onError(`3D-object bij ${p.title} kon niet laden. Gebruik een GLB met ingebouwde textures, zonder Draco-compressie.`);}
   }
   buildPlant(p){

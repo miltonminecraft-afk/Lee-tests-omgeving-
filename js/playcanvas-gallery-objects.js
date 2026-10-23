@@ -1,3 +1,4 @@
+import {pedestalContacts} from './pedestal-contact.js';
 import * as THREE from '../vendor/three.module.js';
 import {GLTFLoader} from '../vendor/GLTFLoader.js';
 import {GalleryScene as ConceptScene} from './concept-scene.js';
@@ -10,7 +11,7 @@ import {mergeSplatProxy} from './splat-proxy.js';
 export async function galleryObjects(pc,app,room,images,{nextRoom=null,previousRoom=null}={}){
  const proxy=await new GLTFLoader().loadAsync(new URL('../images/splats/room-proxy-compact.glb',import.meta.url).href);
  const layout=Object.create(ConceptScene.prototype),world=new THREE.Group();world.add(proxy.scene);
- Object.assign(layout,{room,world,layout:conceptLayout(room),walls:[],workGroups:new Map(),pedestalGroups:new Map(),lightTargets:new Map(),clickables:[],glows:[],materials:{dark:new THREE.MeshStandardMaterial({color:'#252622',roughness:.48,metalness:.35})},library:{bindings:new Map(),prune(){},material:(kind,options)=>new THREE.MeshStandardMaterial(options)}});
+ Object.assign(layout,{room,world,pedestalProxyOnly:true,layout:conceptLayout(room),walls:[],workGroups:new Map(),pedestalGroups:new Map(),lightTargets:new Map(),clickables:[],glows:[],materials:{dark:new THREE.MeshStandardMaterial({color:'#252622',roughness:.48,metalness:.35})},library:{bindings:new Map(),prune(){},material:(kind,options)=>new THREE.MeshStandardMaterial(options)}});
  proxy.scene.traverse(o=>{if(o.isMesh&&/wall|portal|doorway/i.test(o.name))layout.walls.push(o);});
  for(const work of room.works){const image=images.get(work.src);layout.buildWork(work,{image:{width:image.resource.width,height:image.resource.height}});const group=layout.workGroups.get(work.id);group.children.find(child=>child.userData.frameParts)?.removeFromParent();}
  layout.rebuildRails();
@@ -31,8 +32,8 @@ export async function galleryObjects(pc,app,room,images,{nextRoom=null,previousR
   const target=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({visible:false}));target.rotation.x=-Math.PI/2;target.position.set(x,.01,z);layout.floor.add(target);
  }
  mergeSplatProxy(proxy.scene);world.updateMatrixWorld(true);
- const layers={};for(const [key,id]of [['sky',29],['outsideDepth',30],['outside',31],['room',32],['insideDepth',33],['sunlight',36],['works',34],['objects',35]])layers[key]=new pc.Layer({id,name:key,clearDepthBuffer:key==='room'});
- const composition=new pc.LayerComposition();composition.pushOpaque(layers.sky);composition.pushOpaque(layers.outsideDepth);composition.pushTransparent(layers.outside);composition.pushTransparent(layers.room);composition.pushOpaque(layers.insideDepth);composition.pushTransparent(layers.sunlight);composition.pushOpaque(layers.works);composition.pushTransparent(layers.objects);app.scene.layers=composition;
+ const layers={};for(const [key,id]of [['sky',29],['outsideDepth',30],['outside',31],['room',32],['insideDepth',33],['sunlight',36],['contacts',38],['works',34],['objects',35]])layers[key]=new pc.Layer({id,name:key,clearDepthBuffer:key==='room'});
+ const composition=new pc.LayerComposition();composition.pushOpaque(layers.sky);composition.pushOpaque(layers.outsideDepth);composition.pushTransparent(layers.outside);composition.pushTransparent(layers.room);composition.pushOpaque(layers.insideDepth);composition.pushTransparent(layers.sunlight);composition.pushTransparent(layers.contacts);composition.pushOpaque(layers.works);composition.pushTransparent(layers.objects);app.scene.layers=composition;
  const materialCache=new Map(),meshCache=new Map(),entities=[],batchGroups=new Map();
  for(const layer of [layers.outsideDepth,layers.insideDepth,layers.works])batchGroups.set(layer.id,app.batcher.addGroup(layer.name,false,100,undefined,[layer.id]));
  function meshInstance(object,layer,depthOnly=false,image=null,lit=false){
@@ -51,10 +52,14 @@ export async function galleryObjects(pc,app,room,images,{nextRoom=null,previousR
  for(const work of room.works){const group=layout.workGroups.get(work.id);group.traverse(object=>{if(object.isMesh)meshInstance(object,layers.works,false,object.material.map?images.get(work.src):null);});}
  for(const {plane,image}of adjacentMeshes)meshInstance(plane,layers.works,false,image);
  layout.railGroup.traverse(object=>{if(object.isMesh)meshInstance(object,layers.works);});
- for(const group of layout.pedestalGroups.values())group.traverse(object=>{if(object.isMesh)meshInstance(object,layers.works,false,null,true);});
+ // The first child is the picking/collision proxy only. The visible base is a
+ // complete marble Gaussian asset; artwork on top stays independent geometry.
+ for(const group of layout.pedestalGroups.values())for(const child of group.children.slice(1))child.traverse(object=>{if(object.isMesh)meshInstance(object,layers.works,false,null,true);});
+ const contacts=pedestalContacts(pc,app,layers.contacts,room.pedestals||[]);
  app.batcher.generate();
  const sources=[...layout.lightTargets.values()].map(spotRecord);
  return {layout,layers,entities,sources,dispose(){
+  contacts.dispose();
   for(const group of batchGroups.values())app.batcher.removeGroup(group.id);
   for(const entity of entities)entity.destroy();
   for(const mesh of meshCache.values())mesh.destroy();

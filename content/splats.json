@@ -31,5 +31,22 @@
       "night": "images/splats/frames/walnut-night-detail.sog"
     }
   },
-  "revision": "native-playcanvas-optimized-20261023"
+  "revision": "native-playcanvas-optimized-20261023",
+  "pedestals": {
+    "square": {
+      "day": "images/splats/pedestals/marble-square-detail.sog",
+      "nativeHeight": 1.04,
+      "width": 0.66,
+      "depth": 0.66,
+      "count": 620888
+    },
+    "round": {
+      "day": "images/splats/pedestals/marble-round-detail.sog",
+      "nativeHeight": 1.04,
+      "width": 0.66,
+      "depth": 0.66,
+      "count": 551344
+    }
+  },
+  "pedestalProvenance": "images/splats/pedestals/provenance.json"
 }

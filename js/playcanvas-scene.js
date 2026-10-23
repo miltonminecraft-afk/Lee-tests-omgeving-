@@ -1,6 +1,7 @@
 import * as THREE from '../vendor/three.module.js';
 import {GalleryScene as ConceptScene} from './concept-scene.js';
 import {openingPose} from './opening-view.js';
+import {pedestalSplatSource,pedestalTransform,pedestalColorModifier} from './pedestal-splats.js';
 import {ASSETS} from './assets.js';
 import {WalkNavigation} from './navigation.js';
 import {createSplatRenderer} from './playcanvas-splat-renderer.js';
@@ -58,7 +59,8 @@ export class GalleryScene{
   if(this.activeFrameUrl!==frameUrl){this.frameLibrary?.dispose();this.frameLibrary=null;this.activeFrameUrl=frameUrl;}
   const works=[...room.works,...(adjacent?.works.slice(0,2)||[])],placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
   const objectSource=item=>manifest.assets[item.asset]?{path:manifest.assets[item.asset].day,type:'gsplat'}:ASSETS[item.asset]?{path:ASSETS[item.asset].url,type:'container'}:null;
-  const keep=new Set([url(path),frameUrl,...works.map(w=>url(w.src)),...placed.map(p=>{const a=objectSource(p);if(!a)throw Error('Object ontbreekt: '+p.asset);return url(a.path);})]);
+  const pedestalSources=(room.pedestals||[]).map(item=>({item,source:pedestalSplatSource(manifest,item)}));
+  const keep=new Set([url(path),frameUrl,...pedestalSources.map(p=>url(p.source.day)),...works.map(w=>url(w.src)),...placed.map(p=>{const a=objectSource(p);if(!a)throw Error('Object ontbreekt: '+p.asset);return url(a.path);})]);
   this.engine.retain(keep);
   const imageReady=Promise.all([...new Set(works.map(w=>w.src))].map(async src=>[src,await this.engine.load(url(src),'texture')])).then(a=>new Map(a));
   // Frame SOG and paintings are much smaller than the room. Fit them while the
@@ -71,10 +73,10 @@ export class GalleryScene{
     return this.frameLibrary.load('walnut',{w,h},work.frame);
    }));
   });
-  const [roomAsset,images,objects]=await Promise.all([
+  const [roomAsset,images,objects,pedestalAssets]=await Promise.all([
    this.engine.load(url(path)),imageReady,
    Promise.all(placed.map(async item=>({item,type:objectSource(item).type,asset:await this.engine.load(url(objectSource(item).path),objectSource(item).type)}))),
-   framesReady
+   Promise.all(pedestalSources.map(async entry=>({...entry,asset:await this.engine.load(url(entry.source.day))}))),framesReady
   ]);
   if(generation!==this.generation)return;
   this.fixtures=await galleryObjects(pc,app,room,images,{nextRoom,previousRoom});
@@ -88,6 +90,11 @@ export class GalleryScene{
   this.expectedSplats=roomAsset.resource.numSplats+objects.reduce((sum,entry)=>sum+(entry.type==='gsplat'?entry.asset.resource.numSplats:0),0);
   this.lightProcessor=cacheRoomLighting(pc,app,roomEntity,roomAsset,this.fixtures.sources,{ambient:this.lighting==='night'?.16:1});
   app.scene.ambientLight.set(this.lighting==='night'?.14:.72,this.lighting==='night'?.14:.72,this.lighting==='night'?.16:.72);
+  for(const {item,source,asset}of pedestalAssets){
+   const pose=pedestalTransform(item,source),root=new pc.Entity(item.id+' stone splat');root.setPosition(...pose.position);root.setLocalScale(...pose.scale);root.setEulerAngles(0,pose.rotation,0);app.root.addChild(root);this.placed.push(root);
+   const object=this.engine.add(item.id,asset,{parent:root});object.gsplat.layers=[layers.objects.id];object.gsplat.setWorkBufferModifier(pedestalColorModifier(item.color,this.lighting));object.gsplat.workBufferUpdate=pc.WORKBUFFER_UPDATE_ONCE;
+   this.expectedSplats+=asset.resource.numSplats;
+  }
   for(const {item,asset,type}of objects){
    if(type==='container'){
     const model=asset.resource.instantiateRenderEntity({layers:[layers.works.id],castShadows:true,receiveShadows:true});
@@ -115,7 +122,7 @@ export class GalleryScene{
   // Native PlayCanvas memory release, also used by its octree loader. The GPU
   // texture stays intact; decoded ImageBitmaps are no longer needed after upload.
   // Delay until frame decoding has finished. Device loss already shows retry UI.
-  for(const asset of [roomAsset,...objects.map(o=>o.asset),this.frameLibrary.source])asset.resource.releaseTextureSources?.();
+  for(const asset of [roomAsset,...objects.map(o=>o.asset),...pedestalAssets.map(o=>o.asset),this.frameLibrary.source])asset.resource.releaseTextureSources?.();
   this.world.updateMatrixWorld(true);this.loadingRoom=false;this.enteringRoom=false;
  }
  tick(){
