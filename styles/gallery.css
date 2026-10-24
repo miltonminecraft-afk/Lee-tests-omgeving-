@@ -32,7 +32,7 @@ body:has(.masthead) .experience{height:calc(100svh - 192px)}
 html[data-opening-lighting="night"] .opening-fallback{background:radial-gradient(ellipse at 50% 32%,#9c8051,#292820 80%)}
 
 /* Small visible mark, comfortable touch target; independent of the 3D loader. */
-.site-info-button{position:absolute;left:max(0px,env(safe-area-inset-left));bottom:0;z-index:5;width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;padding:0}
+.site-info-button{position:fixed;left:env(safe-area-inset-left,0px);bottom:env(safe-area-inset-bottom,0px);z-index:5;width:44px;height:44px;display:grid;align-items:end;justify-items:start;border:0;background:transparent;padding:4px}
 .site-info-button span{display:grid;place-items:center;width:18px;height:18px;border:1px solid #302f2970;border-radius:50%;background:#f5f1e9e8;color:#302f29;font:bold 12px Georgia,serif;box-shadow:0 1px 4px #0002}
 .site-info-button:hover span{background:#fff}
 #siteInfoDialog{width:min(520px,calc(100% - 32px));text-align:left;padding:32px;line-height:1.65;overflow-wrap:anywhere}
@@ -42,4 +42,4 @@ html[data-opening-lighting="night"] .opening-fallback{background:radial-gradient
 #siteInfoDialog li{margin:16px 0}#siteInfoDialog li p{margin:4px 0}
 #siteInfoDialog a{text-underline-offset:3px}
 .software-credits{border-top:1px solid var(--line);padding-top:16px;margin-top:24px}.software-credits summary{cursor:pointer}
-@media(max-width:600px){.experience>.scene-tools{left:44px;max-width:calc(100% - 54px)}#siteInfoDialog{padding:28px 24px}}
+@media(max-width:600px){.artbar{padding-left:44px}#siteInfoDialog{padding:28px 24px}}
