@@ -41,12 +41,12 @@ export function openingVideoController(){
   async prepare(target){
    scene=target;clip=config.video?.[video.dataset.lighting]?.[video.dataset.profile];
    if(!clip||clip.tour?.version!==OPENING_VIDEO_VERSION||video.dataset.started!=='true'||video.error||video.readyState<2)return false;
-   video.pause();frameTime=frameTime||Math.floor(video.currentTime*30)/30;const pose=current();
+   frameTime=frameTime||Math.floor(video.currentTime*30)/30;const pose=current();
    await ensure(pose);applyOpeningPose(scene,pose);scene.captureTime=0;state.used=true;state.selected=pose.selected;return true;
   },
   async reveal(){
    state.active=true;poster.classList.remove('opening-poster-out');poster.classList.add('tour-video');poster.hidden=false;
-   scene.videoPose=current;report(current());mark('video',current());video.loop=true;
+   scene.videoPose=current;applyOpeningPose(scene,current());report(current());mark('video',current());video.loop=true;
    try{await video.play();}catch{await this.pause();}
   },
   pause(){

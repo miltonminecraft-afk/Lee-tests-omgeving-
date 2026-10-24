@@ -13,3 +13,5 @@ De afzonderlijke bestanden worden in kleine, geauthenticeerde delen verstuurd; d
 De MP4-metadata staat vooraan voor snel starten. Bezoekers laden alleen de passende variant. De encoder en beheerbestanden gaan niet mee naar de publieke build. Ontbrekende of verouderde video, geblokkeerd afspelen, databesparing en verminderde beweging houden de 3D/beeldfallback beschikbaar. De versie van het camerapad is 2; de galerijhandtekening omvat alle zalen.
 
 Controles: `node --test --test-isolation=none tools/gallery-tour.test.mjs tools/opening-video.test.mjs tools/video-publication.test.mjs tools/gallery.test.mjs`.
+
+Videostart: download de passende MP4 meteen naast de collectiecontrole; afspelen blijft geblokkeerd totdat de revisie klopt. Start de zware 3D-import pas na het eerste videoframe en minstens drie seconden buffer. Een begrensde wachttijd houdt de 3D-fallback beschikbaar bij fouten. 3D-voorbereiding pauzeert de lopende video niet. De eerste statische overzichtsduur blijft tien seconden; de camerachoreografie is ongewijzigd. Controle: tools/video-startup.test.mjs.
