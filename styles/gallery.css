@@ -30,3 +30,16 @@ body:has(.masthead) .experience{height:calc(100svh - 192px)}
 .opening-fallback{display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 32%,#ffe4ac,#bba17d 80%)}
 .opening-fallback img{height:66%;width:auto;max-width:90%;object-fit:contain;border:4px solid var(--opening-frame,#543b2d);box-shadow:0 2px 8px #30271966}
 html[data-opening-lighting="night"] .opening-fallback{background:radial-gradient(ellipse at 50% 32%,#9c8051,#292820 80%)}
+
+/* Small visible mark, comfortable touch target; independent of the 3D loader. */
+.site-info-button{position:absolute;left:max(0px,env(safe-area-inset-left));bottom:0;z-index:5;width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;padding:0}
+.site-info-button span{display:grid;place-items:center;width:18px;height:18px;border:1px solid #302f2970;border-radius:50%;background:#f5f1e9e8;color:#302f29;font:bold 12px Georgia,serif;box-shadow:0 1px 4px #0002}
+.site-info-button:hover span{background:#fff}
+#siteInfoDialog{width:min(520px,calc(100% - 32px));text-align:left;padding:32px;line-height:1.65;overflow-wrap:anywhere}
+#siteInfoDialog h2{font:28px var(--serif);margin:0 0 20px}
+#siteInfoDialog h3{font-size:14px;margin:24px 0 8px}
+#siteInfoDialog p,#siteInfoDialog li,#siteInfoDialog summary{font-size:13px;white-space:pre-line}
+#siteInfoDialog li{margin:16px 0}#siteInfoDialog li p{margin:4px 0}
+#siteInfoDialog a{text-underline-offset:3px}
+.software-credits{border-top:1px solid var(--line);padding-top:16px;margin-top:24px}.software-credits summary{cursor:pointer}
+@media(max-width:600px){.experience>.scene-tools{left:44px;max-width:calc(100% - 54px)}#siteInfoDialog{padding:28px 24px}}

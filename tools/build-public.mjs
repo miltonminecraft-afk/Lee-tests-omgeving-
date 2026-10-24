@@ -1,3 +1,4 @@
+import {requiredCredits} from '../js/site-credits.js';
 import {openingHtml,openingConfig} from './opening-poster.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -52,6 +53,7 @@ for(const frame of Object.values(splats.frames||{}))for(const key of ['lodDay','
 for(const name of ['index.html','images','js','styles','vendor','content'])await fs.cp(path.join(root,name),path.join(dist,name),{recursive:true,filter:source=>{
  const relative=path.relative(root,source).replaceAll('\\','/'),parts=relative.split('/');
  if(relative.endsWith('.before-concept.json')||relative.endsWith('.download'))return false;
+ if(relative==='content/free-assets'||relative.startsWith('content/free-assets/'))return false; // editor library; publish only placed assets
  if(parts[0]==='images'&&parts[1]==='studio')return false;
  if(parts[0]==='images'&&parts[1]==='pedestals')return false; // private editor previews; visitors load packed SOG only
  if(parts[0]==='images'&&parts[1]==='opening'&&parts[2]&&!openingFiles.has(relative))return false;
@@ -62,6 +64,12 @@ for(const name of ['index.html','images','js','styles','vendor','content'])await
  if(relative==='images/models/jacaranda_tree/jacaranda_tree.bin'||/^images\/models\/gallery-concept\/material-/.test(relative))return false;
  return true;
 }});
+// Publish attribution metadata only for placed objects, without private library fields.
+const siteInfo=JSON.parse(await fs.readFile(path.join(root,'content/site-info.json'),'utf8'));
+let library=[];
+try{library=JSON.parse(await fs.readFile(path.join(root,'content/free-assets/catalog.json'),'utf8')).entries||[];}catch(error){if(error.code!=='ENOENT')throw error;}
+siteInfo.assets=requiredCredits(gallery,[...(siteInfo.assets||[]),...library]);
+await fs.writeFile(path.join(dist,'content/site-info.json'),JSON.stringify(siteInfo,null,2)+'\n');
 await fs.writeFile(path.join(dist,'content/splats.json'),JSON.stringify(splats,null,2)+'\n');
 for(const relative of splatFiles)await fs.access(path.join(dist,relative));
 // Version the complete application module graph together. A returning mobile
@@ -85,7 +93,7 @@ for(const name of modules){
 }
 const index=path.join(dist,'index.html');
 const preloads=[`js/playcanvas-scene.js?v=${revision}`,`vendor/playcanvas/playcanvas.mjs`,'vendor/three.module.js'].map(url=>`<link rel="modulepreload" href="${url}">`).join('');
-await fs.writeFile(index,(await openingHtml(await fs.readFile(index,'utf8'),root,gallery)).replace(/(src=["']js\/public\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`).replace('</head>',preloads+'</head>'));
+await fs.writeFile(index,(await openingHtml(await fs.readFile(index,'utf8'),root,gallery)).replace(/(src=["']js\/(?:public|site-info)\.js)(?:\?[^"']*)?(["'])/g,`$1?v=${revision}$2`).replace('</head>',preloads+'</head>'));
 await fs.writeFile(path.join(dist,'.nojekyll'),'');
 async function size(folder){let total=0;for(const file of await fs.readdir(folder,{withFileTypes:true})){const target=path.join(folder,file.name);total+=file.isDirectory()?await size(target):(await fs.stat(target)).size;}return total;}
 const bytes=await size(dist);if(bytes>=1e9)throw Error('Public build exceeds the Pages size limit');
