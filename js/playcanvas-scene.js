@@ -1,4 +1,4 @@
-import {sampleOpeningTour,applyOpeningPose} from './opening-tour.js';
+import {sampleOpeningTour,applyOpeningPose} from './opening-tour.js?v=tour2';
 import {GALLERY_DOOR,doorClipPlane,doorDistance,doorwayArrival} from './gallery-doorway.js';
 import {retainPreparedRooms} from './room-preparation-cache.js';
 import * as THREE from '../vendor/three.module.js';
@@ -7,7 +7,7 @@ import {openingPose} from './opening-view.js';
 import {pedestalSplatSource,pedestalTransform,pedestalColorModifier} from './pedestal-splats.js';
 import {ASSETS} from './assets.js';
 import {WalkNavigation} from './navigation.js';
-import {createSplatRenderer} from './playcanvas-splat-renderer.js';
+import {createSplatRenderer} from './playcanvas-splat-renderer.js?v=tour2';
 import {galleryObjects,cacheRoomLighting,prefetchGalleryProxy} from './playcanvas-gallery-objects.js';
 import {createFloorSunlight} from './playcanvas-sunlight.js';
 import {createPlayCanvasSky} from './playcanvas-sky.js';
@@ -59,12 +59,12 @@ export class GalleryScene{
   await this.ready;const manifest=await this.manifestReady;
   const key=this.roomKey(room,nextRoom,previousRoom);
   if(this.preparedRooms.has(key)){const entry=this.preparedRooms.get(key);this.preparedRooms.delete(key);this.preparedRooms.set(key,entry);return entry.pending;}
-  const lighting=this.roomLighting(room),url=path=>new URL('../'+path,import.meta.url).href;
+  const lighting=this.roomLighting(room),url=path=>path.startsWith('data:')?path:new URL('../'+path,import.meta.url).href;
   const path=manifest.relightable?.[room.palette]||manifest.relightable?.approved;
   if(!path)throw Error('Voor deze renderer is nog geen geteste ruimte beschikbaar.');
   const frameUrl=this.frameUrl||url(manifest.nativeSogFrames?.walnut?.[lighting]||'images/splats/frames/walnut-'+lighting+'-detail.sog');
-  const works=room.works,placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[])];
-  const objectSource=item=>manifest.assets[item.asset]?{path:manifest.assets[item.asset].day,type:'gsplat'}:ASSETS[item.asset]?{path:ASSETS[item.asset].url,type:'container'}:null;
+  const works=room.works,placed=[...(room.furniture||[]),...(room.plants||[]),...(room.trees||[]),...(room.pedestals||[]).filter(p=>p.model).map(p=>({...p,y:p.height,height:p.modelHeight,sculpture:true}))];
+  const objectSource=item=>item.sculpture?{path:item.model,type:'container'}:manifest.assets[item.asset]?{path:manifest.assets[item.asset].day,type:'gsplat'}:ASSETS[item.asset]?{path:ASSETS[item.asset].url,type:'container'}:null;
   const pedestalSources=(room.pedestals||[]).map(item=>({item,source:pedestalSplatSource(manifest,item)}));
   const keep=new Set([url(path),frameUrl,...pedestalSources.map(p=>url(p.source.day)),...works.map(w=>url(w.src)),...placed.map(p=>{const a=objectSource(p);if(!a)throw Error('Object ontbreekt: '+p.asset);return url(a.path);})]);
   const entry={key,keep,frameUrl,frameKeys:new Set(),settled:false};
@@ -200,12 +200,13 @@ export class GalleryScene{
   }
  }
  tick(){
-  const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost;
+  const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost&&!this.videoPose&&!this.captureIdle;
   if(visible!==this.renderVisible){this.renderVisible=visible;this.app.autoRender=visible;}
   if(this.presenting&&!document.hidden&&this.container.clientHeight){
+   const videoPose=this.videoPose?.();if(videoPose&&this.room?.id===this.rooms[videoPose.room]?.id)applyOpeningPose(this,videoPose);
    if(this.openingAnimation){const a=this.openingAnimation,t=Math.min(a.stop,a.time+(performance.now()-a.started)/1000);applyOpeningPose(this,sampleOpeningTour(a.tour,t,this.camera.aspect));if(t>=a.stop)this.openingAnimation=null;}
-   if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/(this.transition.duration||1100)),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(this.transition.fromFov!==undefined){this.camera.fov=this.transition.fromFov+(50-this.transition.fromFov)*s;this.camera.updateProjectionMatrix();}if(t===1)this.transition=null;}
-   this.navigation.update();this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);this.checkPortal();this.camera.lookAt(this.controls.target);this.updateInspection();
+   if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/(this.transition.duration||1100)),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(this.transition.fromFov!==undefined){this.camera.fov=this.transition.fromFov+((this.transition.toFov??50)-this.transition.fromFov)*s;this.camera.updateProjectionMatrix();}if(t===1)this.transition=null;}
+   if(!videoPose&&!this.capture)this.navigation.update();this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);if(!videoPose&&!this.capture)this.checkPortal();this.camera.lookAt(this.controls.target);this.updateInspection();
   }
   this.sky?.tick(this.captureTime??performance.now()/1000);
   const position=this.camera.position,target=this.controls.target;
@@ -219,6 +220,7 @@ export class GalleryScene{
    this.lastCameraPose=pose;
   }
  }
+ focusPedestal(p){this.focusAsset({...p,y:p.height,height:p.modelHeight||.65});}
  openingView(){
   const pose=openingPose(this.camera.aspect,this.room);this.camera.fov=pose.fov;this.camera.updateProjectionMatrix();
   this.move(new THREE.Vector3(...pose.position),new THREE.Vector3(...pose.target),false);

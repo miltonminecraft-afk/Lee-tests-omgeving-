@@ -5,7 +5,7 @@ import {openingSignature,openingWork} from '../js/opening-poster-data.js';
 export async function openingConfig(root,gallery){
  const work=openingWork(gallery.rooms[0]),signature=await openingSignature(gallery);
  let metadata;try{metadata=JSON.parse(await fs.readFile(path.join(root,'content/opening.json'),'utf8'));}catch{}
- const galleryRevision=createHash('sha256').update(JSON.stringify(gallery.rooms.slice(0,2))).digest('hex');
+ const galleryRevision=createHash('sha256').update(JSON.stringify(gallery.rooms)).digest('hex');
  const config={signature,galleryRevision,forceNight:gallery.rooms[0].light===0,work:work?{src:work.src,frame:work.frame}:null};
  if(metadata?.signature===signature&&/^images\/opening\/[a-zA-Z0-9-]+-day\.webp$/.test(metadata.day)&&/^images\/opening\/[a-zA-Z0-9-]+-night\.webp$/.test(metadata.night)){
   try{await Promise.all([metadata.day,metadata.night].map(file=>fs.access(path.join(root,file))));Object.assign(config,{day:metadata.day,night:metadata.night});
@@ -13,7 +13,7 @@ export async function openingConfig(root,gallery){
     const valid={};
     for(const mode of ['day','night']){valid[mode]={};for(const profile of ['wide','portrait']){
      const clip=metadata.video[mode]?.[profile];
-     if(!clip||clip.tour?.version!==1||!new RegExp('^images/opening/[a-zA-Z0-9-]+-'+mode+'-'+profile+'\\.mp4$').test(clip.src))throw Error('Outdated video');
+     if(!clip||clip.tour?.version!==2||!new RegExp('^images/opening/[a-zA-Z0-9-]+-'+mode+'-'+profile+'\\.mp4$').test(clip.src))throw Error('Outdated video');
      await fs.access(path.join(root,clip.src));valid[mode][profile]=clip;
     }}config.video=valid;
    }}catch{}

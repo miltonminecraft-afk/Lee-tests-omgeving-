@@ -8,7 +8,7 @@ import {openingSignature} from '../js/opening-poster-data.js';
 import {openingConfig} from './opening-poster.mjs';
 import {decodeOpeningVideo} from './opening-video.mjs';
 const pose={position:[0,1.7,3],target:[0,1.7,0],fov:50,selected:-1};
-const tour={version:1,aspect:3.2,duration:15,keys:[{...pose,time:0},{...pose,time:4.2,position:[4,1.7,3]},{...pose,time:10,position:[4,1.7,3]},{...pose,time:11.1,position:[8,1.7,3],selected:0},{...pose,time:15,position:[8,1.7,3],selected:0}]};
+const tour={version:2,aspect:3.2,duration:15,keys:[{...pose,time:0},{...pose,time:4.2,position:[4,1.7,3]},{...pose,time:10,position:[4,1.7,3]},{...pose,time:11.1,position:[8,1.7,3],selected:0},{...pose,time:15,position:[8,1.7,3],selected:0}]};
 test('handover samples the same smooth camera motion, including halfway through a move',()=>{
  assert.equal(sampleOpeningTour(tour,2.1).position[0],2);
  assert.equal(sampleOpeningTour(tour,2.1).moving,true);

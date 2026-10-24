@@ -27,7 +27,11 @@ export async function createSplatRenderer(canvas,{api='auto',width=canvas.width,
  async function load(url,type='gsplat'){
   const key=type+':'+url;
   if(!assets.has(key)){
-   const promise=new Promise((resolve,reject)=>app.assets.loadFromUrl(url,type,(error,asset)=>error?reject(Error('Asset could not load: '+url,{cause:error})):resolve(asset)));
+   const promise=new Promise((resolve,reject)=>{
+    if(type==='container'&&url.startsWith('data:model/gltf-binary;')){
+     const asset=new pc.Asset('Sculpture','container',{url,filename:'sculpture.glb'});app.assets.add(asset);asset.ready(()=>resolve(asset));asset.once('error',error=>reject(Error('3D-kunstwerk kon niet laden.',{cause:error})));app.assets.load(asset);
+    }else app.assets.loadFromUrl(url,type,(error,asset)=>error?reject(Error('Asset could not load: '+url,{cause:error})):resolve(asset));
+   });
    assets.set(key,promise);promise.catch(()=>{if(assets.get(key)===promise)assets.delete(key);});
   }
   return assets.get(key);
