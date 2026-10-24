@@ -23,6 +23,7 @@ test('all works and occupied pedestals follow a stable spatial circuit',()=>{
 test('full tour starts at overview, includes every room, and crosses doors without teleporting',async()=>{
  const tour=await createGalleryTour(mockScene(source.rooms));
  assert.deepEqual(tour.keys[0].position,[-2,1.62,3.5]);assert.ok(tour.duration>20);
+ assert.equal(tour.keys[1].time,1);assert.equal(sampleOpeningTour(tour,1.1).moving,true);
  for(const [roomIndex,room]of source.rooms.entries())for(const [selected,item]of orderedTourItems(room).entries()){
   const time=tourResumeTime(tour,roomIndex,selected),pose=sampleOpeningTour(tour,time);
   assert.equal(pose.itemId,item.id);assert.equal(pose.room,roomIndex);assert.equal(pose.moving,false);

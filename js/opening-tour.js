@@ -3,13 +3,14 @@ import {GALLERY_DOOR,throughDoor} from './gallery-doorway.js';
 export const OPENING_VIDEO_VERSION=2;
 export const VIDEO_PROFILES={wide:{width:3200,height:1000},portrait:{width:1080,height:1350}};
 export const TOUR_MOVE_SECONDS=2;
+export const TOUR_OVERVIEW_SECONDS=1;
 const snapshot=scene=>({position:scene.camera.position.toArray(),target:scene.controls.target.toArray(),fov:scene.camera.fov});
 export function createOpeningTour(scene){
  scene.overview(false);scene.camera.fov=50;scene.camera.updateProjectionMatrix();const overview=snapshot(scene);
- const keys=[{time:0,...overview,selected:-1},{time:10,...overview,selected:-1}];
+ const keys=[{time:0,...overview,selected:-1},{time:TOUR_OVERVIEW_SECONDS,...overview,selected:-1}];
  for(const [i,item]of orderedTourItems(scene.room).entries()){
   focusTourItem(scene,item);const pose=scene.transition?{position:scene.transition.to.toArray(),target:scene.transition.lookTo.toArray(),fov:50}:snapshot(scene);
-  keys.push({time:10+TOUR_MOVE_SECONDS+i*5,...pose,selected:i,itemId:item.id},{time:15+i*5,...pose,selected:i,itemId:item.id});
+  keys.push({time:TOUR_OVERVIEW_SECONDS+TOUR_MOVE_SECONDS+i*5,...pose,selected:i,itemId:item.id},{time:TOUR_OVERVIEW_SECONDS+5+i*5,...pose,selected:i,itemId:item.id});
  }scene.transition=null;
  return {version:OPENING_VIDEO_VERSION,aspect:scene.camera.aspect,duration:keys.at(-1).time,keys};
 }
@@ -30,7 +31,7 @@ export async function createGalleryTour(scene){
   await load(room);const tour=createOpeningTour(scene);
   if(room)passage(room-1,room);
   if(!room)for(const key of tour.keys)keys.push({...key,room:0});
-  else{push(tour.keys[0],2.5,room);const start=time;for(const key of tour.keys.slice(2))keys.push({...key,time:start+key.time-10,room});}
+  else{push(tour.keys[0],2.5,room);const start=time;for(const key of tour.keys.slice(2))keys.push({...key,time:start+key.time-TOUR_OVERVIEW_SECONDS,room});}
   time=keys.at(-1).time;
  }
  for(let room=rooms.length-1;room>0;room--){

@@ -2,7 +2,7 @@
 
 Beheer maakt bij Publiceren vier MP4's: dag/nacht × breedbeeld/mobiel. Alle gepubliceerde zalen, schilderijen en sokkels met een GLB-kunstwerk zitten in de route. Lege sokkels worden overgeslagen. De bestaande wandvolgorde blijft behouden; bezette sokkels worden ruimtelijk ingevoegd. Een wijziging in iedere zaal maakt de oude video ongeldig. De video wordt gegenereerd uit dezelfde gevalideerde momentopname als de publicatie.
 
-Video is de blijvende diavoorstelling, niet uitsluitend een laadscherm. Hij begint op het overzicht uit het goedgekeurde aanzicht, wacht tien seconden en blijft daarna rondgaan. De camera beweegt twee seconden tussen werken. De zaalovergang loopt door de gekalibreerde boog: aan weerszijden worden positie en kijkrichting met dezelfde starre transformatie omgerekend. De terugweg sluit op het eerste overzicht aan.
+Video is de blijvende diavoorstelling, niet uitsluitend een laadscherm. Hij begint op het overzicht uit het goedgekeurde aanzicht, wacht één seconde en blijft daarna rondgaan. De camera beweegt twee seconden tussen werken. De zaalovergang loopt door de gekalibreerde boog: aan weerszijden worden positie en kijkrichting met dezelfde starre transformatie omgerekend. De terugweg sluit op het eerste overzicht aan.
 
 De 3D-bronnen laden ondertussen. Gedurende video wordt de doorlopende 3D-rendering gepauzeerd. Bij interactie pauzeert de video; het laatst weergegeven videoframe bepaalt de 3D-camera. De video verdwijnt pas nadat de volledige 3D-scène is voorbereid. Bij hervatten beweegt 3D naar het geselecteerde kunstwerk. Het bijbehorende videoframe wordt gedecodeerd, de camera wordt gecontroleerd en pas dan neemt de video over. De `requestVideoFrameCallback`-tijd is leidend; geen onafhankelijke diatimer naast de video.
 
@@ -14,4 +14,4 @@ De MP4-metadata staat vooraan voor snel starten. Bezoekers laden alleen de passe
 
 Controles: `node --test --test-isolation=none tools/gallery-tour.test.mjs tools/opening-video.test.mjs tools/video-publication.test.mjs tools/gallery.test.mjs`.
 
-Videostart: download de passende MP4 meteen naast de collectiecontrole; afspelen blijft geblokkeerd totdat de revisie klopt. Start de zware 3D-import pas na het eerste videoframe en minstens drie seconden buffer. Een begrensde wachttijd houdt de 3D-fallback beschikbaar bij fouten. 3D-voorbereiding pauzeert de lopende video niet. De eerste statische overzichtsduur blijft tien seconden; de camerachoreografie is ongewijzigd. Controle: tools/video-startup.test.mjs.
+Videostart: download de passende MP4 meteen naast de collectiecontrole; afspelen blijft geblokkeerd totdat de revisie klopt. Start de zware 3D-import pas na het eerste videoframe en minstens drie seconden buffer. Een begrensde wachttijd houdt de 3D-fallback beschikbaar bij fouten. 3D-voorbereiding pauzeert de lopende video niet. De eerste statische overzichtsduur is één seconde; de overige camerabewegingen blijven gelijk. Controle: tools/video-startup.test.mjs.
