@@ -43,3 +43,7 @@ html[data-opening-lighting="night"] .opening-fallback{background:radial-gradient
 #siteInfoDialog a{text-underline-offset:3px}
 .software-credits{border-top:1px solid var(--line);padding-top:16px;margin-top:24px}.software-credits summary{cursor:pointer}
 @media(max-width:600px){.artbar{padding-left:44px}#siteInfoDialog{padding:28px 24px}}
+
+/* The baked introduction hands over to the interactive camera at its current frame. */
+.opening-poster video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;pointer-events:none}
+.opening-poster video.playing{opacity:1}

@@ -1,3 +1,4 @@
+import {sampleOpeningTour,applyOpeningPose} from './opening-tour.js';
 import {GALLERY_DOOR,doorClipPlane,doorDistance,doorwayArrival} from './gallery-doorway.js';
 import {retainPreparedRooms} from './room-preparation-cache.js';
 import * as THREE from '../vendor/three.module.js';
@@ -202,10 +203,11 @@ export class GalleryScene{
   const visible=!document.hidden&&this.container.clientHeight>0&&!this.loadingRoom&&!this.contextLost;
   if(visible!==this.renderVisible){this.renderVisible=visible;this.app.autoRender=visible;}
   if(this.presenting&&!document.hidden&&this.container.clientHeight){
+   if(this.openingAnimation){const a=this.openingAnimation,t=Math.min(a.stop,a.time+(performance.now()-a.started)/1000);applyOpeningPose(this,sampleOpeningTour(a.tour,t,this.camera.aspect));if(t>=a.stop)this.openingAnimation=null;}
    if(this.transition){const t=Math.min(1,(performance.now()-this.transition.time)/(this.transition.duration||1100)),s=t*t*(3-2*t);this.camera.position.lerpVectors(this.transition.from,this.transition.to,s);this.controls.target.lerpVectors(this.transition.lookFrom,this.transition.lookTo,s);if(this.transition.fromFov!==undefined){this.camera.fov=this.transition.fromFov+(50-this.transition.fromFov)*s;this.camera.updateProjectionMatrix();}if(t===1)this.transition=null;}
    this.navigation.update();this.camera.position.y=THREE.MathUtils.clamp(this.camera.position.y,.65,4.2);this.checkPortal();this.camera.lookAt(this.controls.target);this.updateInspection();
   }
-  this.sky?.tick(performance.now()/1000);
+  this.sky?.tick(this.captureTime??performance.now()/1000);
   const position=this.camera.position,target=this.controls.target;
   const pose=[position.x,position.y,position.z,target.x,target.y,target.z,this.camera.fov,this.camera.aspect];
   if(!this.lastCameraPose||pose.some((v,i)=>v!==this.lastCameraPose[i])){

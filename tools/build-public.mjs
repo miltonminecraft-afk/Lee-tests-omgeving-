@@ -15,7 +15,7 @@ await fs.rm(dist,{recursive:true,force:true});
 await fs.mkdir(dist,{recursive:true});
 // Explicit allowlist: administration, credentials and private drafts are never deployed to Pages.
 const gallery=JSON.parse(await fs.readFile(path.join(root,'content/gallery.json'),'utf8'));
-const opening=await openingConfig(root,gallery),openingFiles=new Set([opening.day,opening.night].filter(Boolean));
+const opening=await openingConfig(root,gallery),openingFiles=new Set([opening.day,opening.night,...Object.values(opening.video||{}).flatMap(mode=>Object.values(mode).map(clip=>clip.src))].filter(Boolean));
 const splats=JSON.parse(await fs.readFile(path.join(root,candidate?'.local/release-candidate-manifest.json':'content/splats.json'),'utf8'));
 if(splats.proxy==='images/splats/room-proxy-compact.glb')await fs.writeFile(path.join(root,splats.proxy),compactProxy(await fs.readFile(path.join(root,'images/splats/room-proxy.glb'))));
 const models=new Set(),materials=new Set();
@@ -53,6 +53,7 @@ for(const frame of Object.values(splats.frames||{}))for(const key of ['lodDay','
 for(const name of ['index.html','images','js','styles','vendor','content'])await fs.cp(path.join(root,name),path.join(dist,name),{recursive:true,filter:source=>{
  const relative=path.relative(root,source).replaceAll('\\','/'),parts=relative.split('/');
  if(relative.endsWith('.before-concept.json')||relative.endsWith('.download'))return false;
+ if(relative==='vendor/baking'||relative.startsWith('vendor/baking/'))return false; // encoding is editor-only
  if(relative==='content/free-assets'||relative.startsWith('content/free-assets/'))return false; // editor library; publish only placed assets
  if(parts[0]==='images'&&parts[1]==='studio')return false;
  if(parts[0]==='images'&&parts[1]==='pedestals')return false; // private editor previews; visitors load packed SOG only

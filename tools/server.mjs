@@ -1,3 +1,4 @@
+import {decodeOpeningVideo} from './opening-video.mjs';
 import {openingHtml,decodePoster} from './opening-poster.mjs';
 import {openingSignature} from '../js/opening-poster-data.js';
 import http from 'node:http';
@@ -65,12 +66,21 @@ export async function createGalleryServers({root=path.resolve(import.meta.dirnam
     if(pathname==='/api/concept'&&req.method==='GET')return serveFile(res,path.join(root,'design/gallery-concept.png'));
     if(pathname==='/api/gallery'&&req.method==='PUT'){const data=validateGallery(await body(req));await serialized(()=>atomic(draftFile,JSON.stringify(data,null,2)));return json(res,200,{ok:true});}
     if(pathname==='/api/publish'&&req.method==='POST'){
-      const payload=await body(req,12*1024*1024);
+      const payload=await body(req,128*1024*1024);
       await serialized(async()=>{const draft=await readDraft(),signature=await openingSignature(draft);let opening=null;
         if(payload.opening){if(payload.opening.signature!==signature)throw Error('Het concept is aangepast tijdens de opname. Publiceer opnieuw.');
           const day=decodePoster(payload.opening.day),night=decodePoster(payload.opening.night),prefix='images/opening/gallery-'+signature.slice(0,20);
           opening={signature,day:prefix+'-day.webp',night:prefix+'-night.webp'};
-          await atomic(path.join(root,opening.day),day);await atomic(path.join(root,opening.night),night);
+          const files=[[opening.day,day],[opening.night,night]];
+          if(payload.opening.video){
+           opening.video={};
+           for(const mode of ['day','night']){opening.video[mode]={};for(const profile of ['wide','portrait']){
+            const {bytes,metadata}=decodeOpeningVideo(payload.opening.video[mode]?.[profile],profile),file=prefix+'-'+mode+'-'+profile+'.mp4';
+            files.push([file,bytes]);opening.video[mode][profile]={...metadata,src:file};
+           }}
+          }
+          // Validate every clip before replacing any currently published media.
+          for(const [file,bytes]of files)await atomic(path.join(root,file),bytes);
         }
         await atomic(path.join(dataDir,'previous-published.json'),await fs.readFile(publishedFile));
         await atomic(path.join(root,'content/opening.json'),JSON.stringify(opening||{},null,2));
@@ -79,7 +89,7 @@ export async function createGalleryServers({root=path.resolve(import.meta.dirnam
     }
     if(req.method!=='GET')return json(res,405,{error:'Methode niet toegestaan'});
     if(pathname==='/')return serveFile(res,path.join(root,'admin/index.html'));
-    if(['/admin/app.js','/admin/materials.js','/admin/opening-poster.js','/admin/opening-capture.js','/admin/opening-capture.html'].includes(pathname))return serveFile(res,path.join(root,pathname.slice(1)));
+    if(['/admin/app.js','/admin/materials.js','/admin/opening-poster.js','/admin/opening-video-capture.js','/admin/opening-capture.js','/admin/opening-capture.html'].includes(pathname))return serveFile(res,path.join(root,pathname.slice(1)));
     const file=safeAsset(pathname);if(file&&file!=='index.html')return serveFile(res,path.join(root,file));return json(res,404,{error:'Niet gevonden'});
   }catch(e){json(res,400,{error:e.message||'Verzoek kon niet verwerkt worden'});}});
   await new Promise((resolve,reject)=>{publicServer.once('error',reject);publicServer.listen(publicPort,host,resolve);});
